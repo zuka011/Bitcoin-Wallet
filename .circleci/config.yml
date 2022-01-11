@@ -1,0 +1,73 @@
+version: 2.1
+
+executors:
+  default:
+    docker:
+      - image: cimg/python:3.9
+    working_directory: /tmp/workspace
+
+workflows:
+  build-test:
+    jobs:
+      - build
+      - unit-test:
+          requires:
+            - build
+      - type-checker:
+          requires:
+            - build
+      - linter-test:
+          requires:
+            - build
+
+jobs:
+  build:
+    executor: default
+    steps:
+      - checkout
+      - run:
+          name: Set up a virtual environment and install dependencies
+          command: |
+            python -V  # Print out python version for debugging
+            pip install virtualenv
+            virtualenv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+            pip install -e .
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .
+
+  unit-test:
+    executor: default
+    steps:          
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Run unit tests
+          command: |
+            source venv/bin/activate
+            pytest .
+
+  type-checker:
+    executor: default
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Run mypy to check for typing errors
+          command: |
+            source venv/bin/activate
+            ./bin/mypy.sh
+
+  linter-test:
+    executor: default
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Run flake8 to check for formatting errors
+          command: |
+            source venv/bin/activate
+            flake8 .
