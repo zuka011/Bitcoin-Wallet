@@ -16,7 +16,7 @@ class Wallet:
 
 class UserInteractor:
     def __init__(
-            self, user_repository: Optional[InMemoryUserRepository] = None
+        self, user_repository: Optional[InMemoryUserRepository] = None
     ) -> None:
         self.__user_repository = user_repository
 
@@ -29,8 +29,8 @@ class UserInteractor:
 
     def create_wallet(self, api_key: str) -> Wallet:
         if (
-                self.__user_repository is None
-                or api_key not in self.__user_repository.api_keys
+            self.__user_repository is None
+            or api_key not in self.__user_repository.api_keys
         ):
             raise InvalidApiKeyException(f"{api_key} is not a valid API key.")
 

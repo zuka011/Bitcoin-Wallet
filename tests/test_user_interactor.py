@@ -45,7 +45,7 @@ def test_should_create_multiple_users(interactor: UserInteractor) -> None:
 
 @given(user_name=text())
 def test_should_create_wallet_for_user(
-        interactor: UserInteractor, user_name: str
+    interactor: UserInteractor, user_name: str
 ) -> None:
     memory_repository = InMemoryUserRepository()
     interactor = UserInteractor(memory_repository)
