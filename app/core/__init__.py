@@ -1,1 +1,2 @@
-from .users import InMemoryUserRepository, InvalidApiKeyException, UserInteractor
+from .users import InvalidApiKeyException, UserInteractor
+from .repository import InMemoryUserRepository
