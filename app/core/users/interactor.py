@@ -18,12 +18,10 @@ class UserInteractor:
     def __init__(
             self, user_repository: Optional[InMemoryUserRepository] = None
     ) -> None:
-        self.__user_name = None
         self.__user_repository = user_repository
 
-    def create_user(self, user_name: str) -> str:
+    def create_user(self, _: str) -> str:
         api_key = str(uuid4())
-        self.__user_name = user_name
         if self.__user_repository is not None:
             self.__user_repository.api_keys.add(api_key)
 
