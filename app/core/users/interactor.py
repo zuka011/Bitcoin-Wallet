@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional, Protocol
+from typing import Optional
 from uuid import uuid4
 
+from core.converters.currency_converter import ICurrencyConverter
 from core.repositories import IUserRepository
-from infra.repositories import InMemoryUserRepository
 
 
 class InvalidApiKeyException(Exception):
@@ -14,20 +14,7 @@ class InvalidUsernameException(Exception):
     pass
 
 
-class ICurrencyConverter(Protocol):
-    def to_usd(self, btc: float) -> float:
-        pass
-
-
-@dataclass
-class StubCurrencyConverter:
-    exchange_rate: float
-
-    def to_usd(self, btc: float) -> float:
-        return btc * self.exchange_rate
-
-
-@dataclass
+@dataclass(frozen=True)
 class Wallet:
     address: str
     balance_btc: float
@@ -38,11 +25,11 @@ class UserInteractor:
     def __init__(
         self,
         *,
+        user_repository: IUserRepository,
+        currency_converter: ICurrencyConverter,
         min_length: int = 0,
         max_length: Optional[int] = None,
-        user_repository: IUserRepository = InMemoryUserRepository(),
         initial_balance: float = 0,
-        currency_converter: ICurrencyConverter = StubCurrencyConverter(1),
     ) -> None:
         self.__min_length = min_length
         self.__max_length = max_length

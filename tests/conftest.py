@@ -3,6 +3,7 @@ from core import UserInteractor
 from infra import InMemoryUserRepository
 from runner.web import setup
 from starlette.testclient import TestClient
+from stubs.currency_converter import StubCurrencyConverter
 
 
 @pytest.fixture
@@ -17,4 +18,6 @@ def repository() -> InMemoryUserRepository:
 
 @pytest.fixture
 def interactor(repository: InMemoryUserRepository) -> UserInteractor:
-    return UserInteractor(user_repository=repository)
+    return UserInteractor(
+        user_repository=repository, currency_converter=StubCurrencyConverter()
+    )

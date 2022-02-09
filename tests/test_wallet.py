@@ -6,16 +6,20 @@ Test List:
 
 import pytest
 from core import InvalidApiKeyException, UserInteractor
-from core.users.interactor import StubCurrencyConverter
 from hypothesis import given
 from hypothesis.strategies import text
 from infra import InMemoryUserRepository
+from infra.converters.currency_converter import CoinLayerCurrencyConverter
+from stubs.currency_converter import StubCurrencyConverter
 from utils import random_string
 
 
 @given(user_name=text())
 def test_should_create_wallet_for_user(user_name: str) -> None:
-    interactor = UserInteractor(user_repository=InMemoryUserRepository())
+    interactor = UserInteractor(
+        user_repository=InMemoryUserRepository(),
+        currency_converter=StubCurrencyConverter(),
+    )
 
     key = interactor.create_user(user_name)
 
@@ -46,3 +50,7 @@ def test_should_return_correct_balance() -> None:
     wallet = interactor.create_wallet(key)
     assert wallet.balance_btc == 1
     assert wallet.balance_usd == 2
+
+
+def test_should_get_real_time_balance() -> None:
+    assert CoinLayerCurrencyConverter.to_usd(5) is not None
