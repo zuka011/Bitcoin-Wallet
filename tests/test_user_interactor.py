@@ -12,8 +12,8 @@ import string
 from random import choice
 
 import pytest
-from core import InvalidApiKeyException, UserInteractor
-from hypothesis import example, given
+from core import InvalidApiKeyException, InvalidUsernameException, UserInteractor
+from hypothesis import given
 from hypothesis.strategies import text
 from infra.repositories import InMemoryUserRepository
 
@@ -38,8 +38,8 @@ def test_should_create_user_interactor(interactor: UserInteractor) -> None:
 
 
 @given(user_name=text())
-@example(user_name="Jemali")
-def test_should_create_user(interactor: UserInteractor, user_name: str) -> None:
+def test_should_create_user(user_name: str) -> None:
+    interactor = UserInteractor(user_repository=InMemoryUserRepository())
     assert interactor.create_user(user_name) is not None
 
 
@@ -51,11 +51,8 @@ def test_should_create_multiple_users(interactor: UserInteractor) -> None:
 
 
 @given(user_name=text())
-def test_should_create_wallet_for_user(
-    interactor: UserInteractor, user_name: str
-) -> None:
-    memory_repository = InMemoryUserRepository()
-    interactor = UserInteractor(memory_repository)
+def test_should_create_wallet_for_user(user_name: str) -> None:
+    interactor = UserInteractor(user_repository=InMemoryUserRepository())
 
     key = interactor.create_user(user_name)
 
@@ -87,13 +84,13 @@ def test_should_not_allow_duplicate_names(interactor: UserInteractor) -> None:
 
 @given(user_name=text(max_size=7))
 def test_should_not_allow_short_names(user_name: str) -> None:
-    interactor = UserInteractor(min_length=8)
+    interactor = UserInteractor(min_length=8, user_repository=InMemoryUserRepository())
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)
 
 
 @given(user_name=text(min_size=21))
 def test_should_not_allow_long_names(user_name: str) -> None:
-    interactor = UserInteractor(max_length=20)
+    interactor = UserInteractor(max_length=20, user_repository=InMemoryUserRepository())
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)
