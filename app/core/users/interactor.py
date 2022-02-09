@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
 from uuid import uuid4
 
-from core.repository.repository import InMemoryUserRepository
+from infra.repositories.user_repository import InMemoryUserRepository
 
 
 class InvalidApiKeyException(Exception):
@@ -16,7 +15,7 @@ class Wallet:
 
 class UserInteractor:
     def __init__(
-        self, user_repository: Optional[InMemoryUserRepository] = None
+        self, user_repository: InMemoryUserRepository = InMemoryUserRepository()
     ) -> None:
         self.__user_repository = user_repository
 
