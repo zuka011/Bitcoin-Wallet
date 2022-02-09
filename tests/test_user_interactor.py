@@ -11,9 +11,10 @@ import string
 from random import choice
 
 import pytest
-from core import InMemoryUserRepository, InvalidApiKeyException, UserInteractor
+from core import InvalidApiKeyException, UserInteractor
 from hypothesis import example, given
 from hypothesis.strategies import text
+from infra.repositories import InMemoryUserRepository
 
 
 def random_string(length: int = 10) -> str:
