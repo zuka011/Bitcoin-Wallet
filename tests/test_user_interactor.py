@@ -12,10 +12,10 @@ import string
 from random import choice
 
 import pytest
-from core import InMemoryUserRepository, InvalidApiKeyException, UserInteractor
-from core.users.repository import InvalidUsernameException
+from core import InvalidApiKeyException, UserInteractor
 from hypothesis import example, given
 from hypothesis.strategies import text
+from infra.repositories import InMemoryUserRepository
 
 
 def random_string(length: int = 10) -> str:
@@ -39,8 +39,7 @@ def test_should_create_user_interactor(interactor: UserInteractor) -> None:
 
 @given(user_name=text())
 @example(user_name="Jemali")
-def test_should_create_user(user_name: str) -> None:
-    interactor = UserInteractor()
+def test_should_create_user(interactor: UserInteractor, user_name: str) -> None:
     assert interactor.create_user(user_name) is not None
 
 
@@ -52,8 +51,12 @@ def test_should_create_multiple_users(interactor: UserInteractor) -> None:
 
 
 @given(user_name=text())
-def test_should_create_wallet_for_user(user_name: str) -> None:
-    interactor = UserInteractor()
+def test_should_create_wallet_for_user(
+    interactor: UserInteractor, user_name: str
+) -> None:
+    memory_repository = InMemoryUserRepository()
+    interactor = UserInteractor(memory_repository)
+
     key = interactor.create_user(user_name)
 
     assert interactor.create_wallet(key) is not None
