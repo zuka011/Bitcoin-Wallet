@@ -8,29 +8,12 @@ Test List:
 6) Duplicate usernames should throw an exception.   👾
 """
 
-import string
-from random import choice
-
 import pytest
-from core import InvalidApiKeyException, InvalidUsernameException, UserInteractor
+from core import InvalidUsernameException, UserInteractor
 from hypothesis import given
 from hypothesis.strategies import text
 from infra.repositories import InMemoryUserRepository
-
-
-def random_string(length: int = 10) -> str:
-    """Creates a random string."""
-    return "".join([choice(string.ascii_letters) for _ in range(length)])
-
-
-@pytest.fixture
-def repository() -> InMemoryUserRepository:
-    return InMemoryUserRepository()
-
-
-@pytest.fixture
-def interactor(repository: InMemoryUserRepository) -> UserInteractor:
-    return UserInteractor(user_repository=repository)
+from utils import random_string
 
 
 def test_should_create_user_interactor(interactor: UserInteractor) -> None:
@@ -48,22 +31,6 @@ def test_should_create_multiple_users(interactor: UserInteractor) -> None:
     key_2 = interactor.create_user(f"{random_string()} 2")
 
     assert key_1 != key_2
-
-
-@given(user_name=text())
-def test_should_create_wallet_for_user(user_name: str) -> None:
-    interactor = UserInteractor(user_repository=InMemoryUserRepository())
-
-    key = interactor.create_user(user_name)
-
-    assert interactor.create_wallet(key) is not None
-
-
-def test_should_not_create_wallet_for_invalid_user(interactor: UserInteractor) -> None:
-    key = random_string()
-
-    with pytest.raises(InvalidApiKeyException):
-        interactor.create_wallet(key)
 
 
 def test_should_store_api_keys_persistently() -> None:
