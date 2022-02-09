@@ -1,7 +1,12 @@
-from dataclasses import dataclass, field
 from typing import Set
 
 
-@dataclass
 class InMemoryUserRepository:
-    api_keys: Set[str] = field(init=False, default_factory=set)
+    def __init__(self) -> None:
+        self.__api_keys: Set[str] = set()
+
+    def add_user(self, *, api_key: str) -> None:
+        self.__api_keys.add(api_key)
+
+    def has_api_key(self, api_key: str) -> bool:
+        return api_key in self.__api_keys
