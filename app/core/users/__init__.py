@@ -1,1 +1,1 @@
-from .interactor import InvalidApiKeyException, UserInteractor
+from .interactor import InvalidApiKeyException, InvalidUsernameException, UserInteractor
