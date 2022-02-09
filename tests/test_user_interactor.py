@@ -1,10 +1,11 @@
 """
 Test List:
-1) Users should be able to register.            👾
-2) API keys should be unique.                   👾
+1) Users should be able to register.                👾
+2) API keys should be unique.                       👾
 3) User should not be able to register with duplicate username. ?
-4) Should create wallet for users.              👾
-5) Should not create wallet for invalid users.  👾
+4) Should create wallet for users.                  👾
+5) Should not create wallet for invalid users.      👾
+6) Duplicate usernames should throw an exception.   👾
 """
 
 import string
@@ -12,6 +13,7 @@ from random import choice
 
 import pytest
 from core import InMemoryUserRepository, InvalidApiKeyException, UserInteractor
+from core.users.repository import InvalidUsernameException
 from hypothesis import example, given
 from hypothesis.strategies import text
 
@@ -21,9 +23,14 @@ def random_string(length: int = 10) -> str:
     return "".join([choice(string.ascii_letters) for _ in range(length)])
 
 
-@pytest.fixture(scope="module")
-def interactor() -> UserInteractor:
-    return UserInteractor()
+@pytest.fixture
+def repository() -> InMemoryUserRepository:
+    return InMemoryUserRepository()
+
+
+@pytest.fixture
+def interactor(repository: InMemoryUserRepository) -> UserInteractor:
+    return UserInteractor(user_repository=repository)
 
 
 def test_should_create_user_interactor(interactor: UserInteractor) -> None:
@@ -32,7 +39,8 @@ def test_should_create_user_interactor(interactor: UserInteractor) -> None:
 
 @given(user_name=text())
 @example(user_name="Jemali")
-def test_should_create_user(interactor: UserInteractor, user_name: str) -> None:
+def test_should_create_user(user_name: str) -> None:
+    interactor = UserInteractor()
     assert interactor.create_user(user_name) is not None
 
 
@@ -44,9 +52,8 @@ def test_should_create_multiple_users(interactor: UserInteractor) -> None:
 
 
 @given(user_name=text())
-def test_should_create_wallet_for_user(
-    interactor: UserInteractor, user_name: str
-) -> None:
+def test_should_create_wallet_for_user(user_name: str) -> None:
+    interactor = UserInteractor()
     key = interactor.create_user(user_name)
 
     assert interactor.create_wallet(key) is not None
@@ -62,8 +69,28 @@ def test_should_not_create_wallet_for_invalid_user(interactor: UserInteractor) -
 def test_should_store_api_keys_persistently() -> None:
     memory_repository = InMemoryUserRepository()
 
-    interactor = UserInteractor(memory_repository)
+    interactor = UserInteractor(user_repository=memory_repository)
     key = interactor.create_user("User 1")
 
-    interactor = UserInteractor(memory_repository)
+    interactor = UserInteractor(user_repository=memory_repository)
     assert interactor.create_wallet(key) is not None
+
+
+def test_should_not_allow_duplicate_names(interactor: UserInteractor) -> None:
+    interactor.create_user("User 1")
+    with pytest.raises(InvalidUsernameException):
+        interactor.create_user("User 1")
+
+
+@given(user_name=text(max_size=7))
+def test_should_not_allow_short_names(user_name: str) -> None:
+    interactor = UserInteractor(min_length=8)
+    with pytest.raises(InvalidUsernameException):
+        interactor.create_user(user_name)
+
+
+@given(user_name=text(min_size=21))
+def test_should_not_allow_long_names(user_name: str) -> None:
+    interactor = UserInteractor(max_length=20)
+    with pytest.raises(InvalidUsernameException):
+        interactor.create_user(user_name)
