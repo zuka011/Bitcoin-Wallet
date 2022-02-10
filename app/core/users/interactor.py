@@ -1,8 +1,8 @@
-from dataclasses import dataclass, field
-from typing import Optional, Protocol, List
+from dataclasses import dataclass
+from typing import List, Protocol
 from uuid import uuid4
 
-from core.repositories import IUserRepository
+from core import IUserRepository
 from infra.repositories import InMemoryUserRepository
 
 
@@ -18,12 +18,14 @@ class IUsernameValidation(Protocol):
     def is_valid(self, username: str) -> bool:
         pass
 
+
 class LongUsernameValidation:
     def __init__(self, boundary_length: int):
         self.__boundary_length = boundary_length
 
     def is_valid(self, username: str) -> bool:
         return len(username) <= self.__boundary_length
+
 
 class ShortUsernameValidation:
     def __init__(self, boundary_length: int):
@@ -38,10 +40,11 @@ class Wallet:
     pass
 
 
-@dataclass
 class UserInteractor:
-    user_repository: IUserRepository = InMemoryUserRepository(),
-    validations: List[IUsernameValidation] = field(default_factory=list)
+    def __init__(self, validations: List[IUsernameValidation],
+                 user_repository: IUserRepository = InMemoryUserRepository()):
+        self.user_repository = user_repository
+        self.validations: List[IUsernameValidation] = validations
 
     def __is_valid(self, username: str) -> bool:
         return all([validation.is_valid(username) for validation in self.validations])
