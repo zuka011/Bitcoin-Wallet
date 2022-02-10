@@ -1,5 +1,6 @@
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, Optional
 from uuid import uuid4
 
 from core.converters.currency_converter import ICurrencyConverter
@@ -11,6 +12,10 @@ class InvalidApiKeyException(Exception):
 
 
 class InvalidUsernameException(Exception):
+    pass
+
+
+class InvalidWalletRequestException(Exception):
     pass
 
 
@@ -30,12 +35,15 @@ class UserInteractor:
         min_length: int = 0,
         max_length: Optional[int] = None,
         initial_balance: float = 0,
+        wallet_limit: Optional[int] = None,
     ) -> None:
         self.__min_length = min_length
         self.__max_length = max_length
         self.__user_repository = user_repository
         self.__initial_balance = initial_balance
         self.__currency_converter = currency_converter
+        self.__wallet_limit = wallet_limit
+        self.__wallet_count: Dict[str, int] = defaultdict(lambda: 0)
 
     def create_user(self, username: str) -> str:
         if len(username) < self.__min_length:
@@ -53,11 +61,21 @@ class UserInteractor:
         return api_key
 
     def create_wallet(self, api_key: str) -> Wallet:
+        if (
+            self.__wallet_limit is not None
+            and self.__wallet_count[api_key] >= self.__wallet_limit
+        ):
+            raise InvalidWalletRequestException(
+                f"You cannot create another wallet. You already have {self.__wallet_limit}."
+            )
+
         if not self.__user_repository.has_api_key(api_key):
             raise InvalidApiKeyException(f"{api_key} is not a valid API key.")
-        address = str(uuid4())
+
+        self.__wallet_count[api_key] += 1
+
         return Wallet(
-            address=address,
+            address=str(uuid4()),
             balance_btc=self.__initial_balance,
             balance_usd=self.__currency_converter.to_usd(self.__initial_balance),
         )

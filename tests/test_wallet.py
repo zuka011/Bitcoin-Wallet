@@ -5,7 +5,7 @@ Test List:
 """
 
 import pytest
-from core import InvalidApiKeyException, UserInteractor
+from core import InvalidApiKeyException, InvalidWalletRequestException, UserInteractor
 from hypothesis import given
 from hypothesis.strategies import text
 from infra import InMemoryUserRepository
@@ -30,6 +30,22 @@ def test_should_not_create_wallet_for_invalid_user(interactor: UserInteractor) -
     key = random_string()
 
     with pytest.raises(InvalidApiKeyException):
+        interactor.create_wallet(key)
+
+
+def test_should_not_create_too_many_wallets() -> None:
+    interactor = UserInteractor(
+        user_repository=InMemoryUserRepository(),
+        currency_converter=StubCurrencyConverter(),
+        wallet_limit=3,
+    )
+
+    key = interactor.create_user("Bla bla user")
+    interactor.create_wallet(key)
+    interactor.create_wallet(key)
+    interactor.create_wallet(key)
+
+    with pytest.raises(InvalidWalletRequestException):
         interactor.create_wallet(key)
 
 

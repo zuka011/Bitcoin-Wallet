@@ -1,1 +1,6 @@
-from .interactor import InvalidApiKeyException, InvalidUsernameException, UserInteractor
+from .interactor import (
+    InvalidApiKeyException,
+    InvalidUsernameException,
+    InvalidWalletRequestException,
+    UserInteractor,
+)
