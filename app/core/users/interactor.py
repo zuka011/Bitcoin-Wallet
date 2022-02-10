@@ -3,7 +3,7 @@ from typing import Iterable, Optional
 from uuid import uuid4
 
 from core.converters.currency_converter import ICurrencyConverter
-from core.repositories import IUserRepository
+from core.repositories import IUserRepository, IWalletRepository
 from core.validations import InvalidUsernameException, IWalletValidator
 
 
@@ -19,6 +19,7 @@ class UserInteractor:
         self,
         *,
         user_repository: IUserRepository,
+        wallet_repository: IWalletRepository,
         currency_converter: ICurrencyConverter,
         min_length: int = 0,
         max_length: Optional[int] = None,
@@ -28,6 +29,7 @@ class UserInteractor:
         self.__min_length = min_length
         self.__max_length = max_length
         self.__user_repository = user_repository
+        self.__wallet_repository = wallet_repository
         self.__initial_balance = initial_balance
         self.__currency_converter = currency_converter
         self.__wallet_validators = wallet_validators
@@ -50,6 +52,8 @@ class UserInteractor:
     def create_wallet(self, api_key: str) -> Wallet:
         for validator in self.__wallet_validators:
             validator.validate_request(api_key=api_key)
+
+        self.__wallet_repository.add_wallet(api_key=api_key)
 
         return Wallet(
             address=str(uuid4()),

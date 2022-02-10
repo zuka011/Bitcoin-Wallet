@@ -14,7 +14,11 @@ from core import (
 )
 from hypothesis import given
 from hypothesis.strategies import text
-from infra import CoinLayerCurrencyConverter, InMemoryUserRepository
+from infra import (
+    CoinLayerCurrencyConverter,
+    InMemoryUserRepository,
+    InMemoryWalletRepository,
+)
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_string
 
@@ -23,6 +27,7 @@ from utils import random_string
 def test_should_create_wallet_for_user(user_name: str) -> None:
     interactor = UserInteractor(
         user_repository=InMemoryUserRepository(),
+        wallet_repository=InMemoryWalletRepository(),
         currency_converter=StubCurrencyConverter(),
     )
 
@@ -33,11 +38,13 @@ def test_should_create_wallet_for_user(user_name: str) -> None:
 
 def test_should_not_create_wallet_for_invalid_user(
     memory_user_repository: InMemoryUserRepository,
+    memory_wallet_repository: InMemoryWalletRepository,
 ) -> None:
     key = random_string()
 
     interactor = UserInteractor(
         user_repository=memory_user_repository,
+        wallet_repository=memory_wallet_repository,
         currency_converter=StubCurrencyConverter(),
         wallet_validators=[
             WalletApiKeyValidator(user_repository=memory_user_repository)
@@ -50,11 +57,17 @@ def test_should_not_create_wallet_for_invalid_user(
 
 def test_should_not_create_too_many_wallets(
     memory_user_repository: InMemoryUserRepository,
+    memory_wallet_repository: InMemoryWalletRepository,
 ) -> None:
     interactor = UserInteractor(
         user_repository=memory_user_repository,
+        wallet_repository=memory_wallet_repository,
         currency_converter=StubCurrencyConverter(),
-        wallet_validators=[WalletLimitValidator(wallet_limit=3)],
+        wallet_validators=[
+            WalletLimitValidator(
+                wallet_limit=3, wallet_repository=memory_wallet_repository
+            )
+        ],
     )
 
     key = interactor.create_user("Bla bla user")
@@ -73,9 +86,13 @@ def test_should_create_unique_address_for_user(interactor: UserInteractor) -> No
     )
 
 
-def test_should_return_correct_balance() -> None:
+def test_should_return_correct_balance(
+    memory_user_repository: InMemoryUserRepository,
+    memory_wallet_repository: InMemoryWalletRepository,
+) -> None:
     interactor = UserInteractor(
-        user_repository=InMemoryUserRepository(),
+        user_repository=memory_user_repository,
+        wallet_repository=memory_wallet_repository,
         initial_balance=1,
         currency_converter=StubCurrencyConverter(2),
     )

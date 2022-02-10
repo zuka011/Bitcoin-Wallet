@@ -12,6 +12,7 @@ import pytest
 from core import InvalidUsernameException, UserInteractor
 from hypothesis import given
 from hypothesis.strategies import text
+from infra import InMemoryWalletRepository
 from infra.repositories import InMemoryUserRepository
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_string
@@ -25,6 +26,7 @@ def test_should_create_user_interactor(interactor: UserInteractor) -> None:
 def test_should_create_user(user_name: str) -> None:
     interactor = UserInteractor(
         user_repository=InMemoryUserRepository(),
+        wallet_repository=InMemoryWalletRepository(),
         currency_converter=StubCurrencyConverter(),
     )
     assert interactor.create_user(user_name) is not None
@@ -62,6 +64,7 @@ def test_should_not_allow_short_names(user_name: str) -> None:
     interactor = UserInteractor(
         min_length=8,
         user_repository=InMemoryUserRepository(),
+        wallet_repository=InMemoryWalletRepository(),
         currency_converter=StubCurrencyConverter(),
     )
     with pytest.raises(InvalidUsernameException):
@@ -73,6 +76,7 @@ def test_should_not_allow_long_names(user_name: str) -> None:
     interactor = UserInteractor(
         max_length=20,
         user_repository=InMemoryUserRepository(),
+        wallet_repository=InMemoryWalletRepository(),
         currency_converter=StubCurrencyConverter(),
     )
     with pytest.raises(InvalidUsernameException):

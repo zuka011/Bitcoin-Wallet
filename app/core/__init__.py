@@ -1,4 +1,4 @@
-from .repositories import IUserRepository
+from .repositories import IUserRepository, IWalletRepository
 from .users import UserInteractor
 from .validations import (
     InvalidApiKeyException,
