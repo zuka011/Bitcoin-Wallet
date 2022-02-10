@@ -12,12 +12,13 @@ def test_client() -> TestClient:
 
 
 @pytest.fixture
-def repository() -> InMemoryUserRepository:
+def memory_user_repository() -> InMemoryUserRepository:
     return InMemoryUserRepository()
 
 
 @pytest.fixture
-def interactor(repository: InMemoryUserRepository) -> UserInteractor:
+def interactor(memory_user_repository: InMemoryUserRepository) -> UserInteractor:
     return UserInteractor(
-        user_repository=repository, currency_converter=StubCurrencyConverter()
+        user_repository=memory_user_repository,
+        currency_converter=StubCurrencyConverter(),
     )

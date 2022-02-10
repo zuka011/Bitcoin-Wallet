@@ -1,9 +1,9 @@
-from .repositories import IUserRepository
-from .users import UserInteractor
-from .validations import (
+from .exception import (
     InvalidApiKeyException,
     InvalidUsernameException,
     InvalidWalletRequestException,
+)
+from .wallet_validation import (
     IWalletValidator,
     WalletApiKeyValidator,
     WalletLimitValidator,

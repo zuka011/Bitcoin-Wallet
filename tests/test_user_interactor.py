@@ -38,17 +38,17 @@ def test_should_create_multiple_users(interactor: UserInteractor) -> None:
 
 
 def test_should_store_usernames_persistently(
-    interactor: UserInteractor, repository: InMemoryUserRepository
+    interactor: UserInteractor, memory_user_repository: InMemoryUserRepository
 ) -> None:
     interactor.create_user("User 1")
-    assert repository.has_username("User 1")
+    assert memory_user_repository.has_username("User 1")
 
 
 def test_should_store_api_keys_persistently(
-    interactor: UserInteractor, repository: InMemoryUserRepository
+    interactor: UserInteractor, memory_user_repository: InMemoryUserRepository
 ) -> None:
     key = interactor.create_user("User 1")
-    assert repository.has_api_key(key)
+    assert memory_user_repository.has_api_key(key)
 
 
 def test_should_not_allow_duplicate_names(interactor: UserInteractor) -> None:
