@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import Optional
 from uuid import uuid4
 
+from core.converters.currency_converter import ICurrencyConverter
 from core.repositories import IUserRepository
-from infra.repositories import InMemoryUserRepository
 
 
 class InvalidApiKeyException(Exception):
@@ -14,22 +14,28 @@ class InvalidUsernameException(Exception):
     pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Wallet:
-    pass
+    address: str
+    balance_btc: float
+    balance_usd: float
 
 
 class UserInteractor:
     def __init__(
         self,
         *,
+        user_repository: IUserRepository,
+        currency_converter: ICurrencyConverter,
         min_length: int = 0,
         max_length: Optional[int] = None,
-        user_repository: IUserRepository = InMemoryUserRepository(),
+        initial_balance: float = 0,
     ) -> None:
         self.__min_length = min_length
         self.__max_length = max_length
         self.__user_repository = user_repository
+        self.__initial_balance = initial_balance
+        self.__currency_converter = currency_converter
 
     def create_user(self, username: str) -> str:
         if len(username) < self.__min_length:
@@ -49,5 +55,9 @@ class UserInteractor:
     def create_wallet(self, api_key: str) -> Wallet:
         if not self.__user_repository.has_api_key(api_key):
             raise InvalidApiKeyException(f"{api_key} is not a valid API key.")
-
-        return Wallet()
+        address = str(uuid4())
+        return Wallet(
+            address=address,
+            balance_btc=self.__initial_balance,
+            balance_usd=self.__currency_converter.to_usd(self.__initial_balance),
+        )
