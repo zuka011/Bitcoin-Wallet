@@ -1,7 +1,7 @@
 from typing import Protocol
 
 from core.repositories import IUserRepository, IWalletRepository
-from core.validations import InvalidApiKeyException, InvalidWalletRequestException
+from core.validators import InvalidApiKeyException, InvalidWalletRequestException
 
 
 class IWalletValidator(Protocol):

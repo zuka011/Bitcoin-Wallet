@@ -3,7 +3,7 @@ from typing import Final
 from core.configurations import ISystemConfiguration
 from core.converters import ICurrencyConverter
 from core.repositories import IWalletRepository, Wallet
-from core.validations import InvalidApiKeyException
+from core.validators import InvalidApiKeyException
 
 HUNDRED_PERCENT: Final[int] = 100
 

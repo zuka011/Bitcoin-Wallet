@@ -4,7 +4,7 @@ from uuid import uuid4
 from core.configurations import ISystemConfiguration
 from core.converters.currency_converter import ICurrencyConverter
 from core.repositories import IUserRepository, IWalletRepository, Wallet
-from core.validations import IWalletValidator
+from core.validators import IWalletValidator
 
 
 class WalletInteractor:
