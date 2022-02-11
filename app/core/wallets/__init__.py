@@ -1,1 +1,1 @@
-from .interactor import Wallet, WalletInteractor
+from .interactor import WalletInteractor
