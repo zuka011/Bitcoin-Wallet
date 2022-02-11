@@ -21,3 +21,6 @@ class IWalletRepository(Protocol):
 
     def get_wallet_count(self, *, api_key: str) -> int:
         """Returns the number of wallets belonging to the user with the specified API key."""
+
+    def is_wallet_owner(self, *, wallet_address: str, api_key: str) -> bool:
+        """Returns true if wallet belongs to user with the specified API key."""

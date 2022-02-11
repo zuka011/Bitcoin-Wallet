@@ -1,5 +1,6 @@
-from core import ICurrencyConverter
+from core.converters import ICurrencyConverter
 from core.repositories import IWalletRepository, Wallet
+from core.validations import InvalidApiKeyException
 
 
 class TransactionInteractor:
@@ -7,7 +8,7 @@ class TransactionInteractor:
         self,
         *,
         wallet_repository: IWalletRepository,
-        currency_converter: ICurrencyConverter
+        currency_converter: ICurrencyConverter,
     ) -> None:
         self.__wallet_repository = wallet_repository
         self.__currency_converter = currency_converter
@@ -19,6 +20,13 @@ class TransactionInteractor:
         destination_address: str,
         amount_btc: float,
     ) -> None:
+        if not self.__wallet_repository.is_wallet_owner(
+            wallet_address=source_address, api_key=api_key
+        ):
+            raise InvalidApiKeyException(
+                f"Cannot transfer funds from {source_address} with incorrect API key."
+            )
+
         source_wallet = self.__wallet_repository.get_wallet(
             wallet_address=source_address
         )
