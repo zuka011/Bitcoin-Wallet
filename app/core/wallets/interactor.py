@@ -1,10 +1,10 @@
 from typing import Iterable
 from uuid import uuid4
 
+from core.configurations import ISystemConfiguration
 from core.converters.currency_converter import ICurrencyConverter
 from core.repositories import IUserRepository, IWalletRepository, Wallet
 from core.validations import IWalletValidator
-from core.wallets.balance_supplier import IBalanceSupplier
 
 
 class WalletInteractor:
@@ -14,12 +14,12 @@ class WalletInteractor:
         user_repository: IUserRepository,
         wallet_repository: IWalletRepository,
         currency_converter: ICurrencyConverter,
-        balance_supplier: IBalanceSupplier,
+        system_configuration: ISystemConfiguration,
         wallet_validators: Iterable[IWalletValidator] = (),
     ) -> None:
         self.__user_repository = user_repository
         self.__wallet_repository = wallet_repository
-        self.__balance_supplier = balance_supplier
+        self.__system_configuration = system_configuration
         self.__currency_converter = currency_converter
         self.__wallet_validators = wallet_validators
 
@@ -27,7 +27,7 @@ class WalletInteractor:
         for validator in self.__wallet_validators:
             validator.validate_request(api_key=api_key)
 
-        initial_balance = self.__balance_supplier.get_initial_balance_btc()
+        initial_balance = self.__system_configuration.get_initial_balance_btc()
 
         wallet = Wallet(
             address=str(uuid4()),

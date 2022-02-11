@@ -12,7 +12,7 @@ from infra import (
     InMemoryUserRepository,
     InMemoryWalletRepository,
 )
-from stubs.balance_supplier import StubBalanceSupplier
+from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_string
 
@@ -28,7 +28,7 @@ def test_should_not_create_wallet_for_invalid_user(
     memory_user_repository: InMemoryUserRepository,
     memory_wallet_repository: InMemoryWalletRepository,
     currency_converter: StubCurrencyConverter,
-    balance_supplier: StubBalanceSupplier,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
     key = random_string()
 
@@ -36,7 +36,7 @@ def test_should_not_create_wallet_for_invalid_user(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
-        balance_supplier=balance_supplier,
+        system_configuration=system_configuration,
         wallet_validators=[
             WalletApiKeyValidator(user_repository=memory_user_repository)
         ],
@@ -51,13 +51,13 @@ def test_should_not_create_too_many_wallets(
     memory_user_repository: InMemoryUserRepository,
     memory_wallet_repository: InMemoryWalletRepository,
     currency_converter: StubCurrencyConverter,
-    balance_supplier: StubBalanceSupplier,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
     wallet_interactor = WalletInteractor(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
-        balance_supplier=balance_supplier,
+        system_configuration=system_configuration,
         wallet_validators=[
             WalletLimitValidator(
                 wallet_limit=3, wallet_repository=memory_wallet_repository
@@ -99,10 +99,10 @@ def test_should_return_correct_balance(
     user_interactor: UserInteractor,
     wallet_interactor: WalletInteractor,
     currency_converter: StubCurrencyConverter,
-    balance_supplier: StubBalanceSupplier,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
     currency_converter.exchange_rate = 2
-    balance_supplier.initial_balance = 1
+    system_configuration.initial_balance = 1
 
     key = user_interactor.create_user(random_string())
     wallet = wallet_interactor.create_wallet(key)
