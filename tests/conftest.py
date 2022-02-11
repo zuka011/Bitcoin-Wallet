@@ -8,12 +8,6 @@ from stubs.currency_converter import StubCurrencyConverter
 
 
 @pytest.fixture
-def test_client() -> TestClient:
-    """Returns a preset test client."""
-    return TestClient(setup())
-
-
-@pytest.fixture
 def memory_user_repository() -> InMemoryUserRepository:
     """Returns an in-memory implementation of a user repository."""
     return InMemoryUserRepository()
@@ -58,3 +52,9 @@ def wallet_interactor(
         currency_converter=currency_converter,
         system_configuration=system_configuration,
     )
+
+
+@pytest.fixture
+def test_client(memory_user_repository: InMemoryUserRepository) -> TestClient:
+    """Returns a preset test client."""
+    return TestClient(setup(user_repository=memory_user_repository))

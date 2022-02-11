@@ -24,6 +24,7 @@ class WalletInteractor:
         self.__wallet_validators = wallet_validators
 
     def create_wallet(self, api_key: str) -> Wallet:
+        """Creates a wallet for the user with the specified API key and returns it."""
         for validator in self.__wallet_validators:
             validator.validate_request(api_key=api_key)
 
@@ -39,4 +40,5 @@ class WalletInteractor:
         return wallet
 
     def get_wallet(self, *, address: str) -> Wallet:
+        """Returns the wallet corresponding to the specified unique address."""
         return self.__wallet_repository.get_wallet(wallet_address=address)
