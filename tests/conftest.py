@@ -1,4 +1,6 @@
 import pytest
+from clients.user import UserClient
+from clients.wallet import WalletClient
 from core import UserInteractor, WalletInteractor
 from infra import InMemoryUserRepository, InMemoryWalletRepository
 from runner.web import setup
@@ -27,6 +29,7 @@ def currency_converter() -> StubCurrencyConverter:
 
 @pytest.fixture
 def system_configuration() -> StubSystemConfiguration:
+    """Returns a test stub for a system configuration."""
     return StubSystemConfiguration()
 
 
@@ -58,3 +61,15 @@ def wallet_interactor(
 def test_client(memory_user_repository: InMemoryUserRepository) -> TestClient:
     """Returns a preset test client."""
     return TestClient(setup(user_repository=memory_user_repository))
+
+
+@pytest.fixture
+def user_client(test_client: TestClient) -> UserClient:
+    """Returns a convenient test client for the User API."""
+    return UserClient(test_client)
+
+
+@pytest.fixture
+def wallet_client(test_client: TestClient) -> WalletClient:
+    """Returns a convenient test client for the Wallet API."""
+    return WalletClient(test_client)
