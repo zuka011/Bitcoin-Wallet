@@ -8,105 +8,66 @@ Test List:
 6) Duplicate usernames should throw an exception.   👾
 """
 
-import string
-from random import choice
-from typing import List
-
 import pytest
-from core import InvalidApiKeyException, InvalidUsernameException, UserInteractor
-from core.users.interactor import (
-    IUsernameValidation,
-    LongUsernameValidation,
-    ShortUsernameValidation,
-)
+from core import InvalidUsernameException, UserInteractor
 from hypothesis import given
 from hypothesis.strategies import text
-from infra.repositories import InMemoryUserRepository
-
-MIN_LENGTH = 5
-MAX_LENGTH = 20
+from infra import InMemoryUserRepository
+from utils import random_string
 
 
-@pytest.fixture(scope="session")
-def validations() -> List[IUsernameValidation]:
-    short_username_val = ShortUsernameValidation(boundary_length=MIN_LENGTH)
-    long_username_val = LongUsernameValidation(boundary_length=MAX_LENGTH)
-    return [short_username_val, long_username_val]
+def test_should_create_user_interactor(user_interactor: UserInteractor) -> None:
+    assert user_interactor is not None
 
 
-def random_string(length: int = 10) -> str:
-    """Creates a random string."""
-    return "".join([choice(string.ascii_letters) for _ in range(length)])
-
-
-@pytest.fixture
-def repository() -> InMemoryUserRepository:
-    return InMemoryUserRepository()
-
-
-@pytest.fixture
-def interactor(repository: InMemoryUserRepository, validations: List[IUsernameValidation]) -> UserInteractor:
-    return UserInteractor(user_repository=repository, validations=validations)
-
-
-def test_should_create_user_interactor(interactor: UserInteractor) -> None:
-    assert interactor is not None
-
-
-@given(user_name=text(min_size=MIN_LENGTH, max_size=MAX_LENGTH))
-def test_should_create_user(user_name: str, validations: List[IUsernameValidation]) -> None:
-    interactor = UserInteractor(user_repository=InMemoryUserRepository(), validations=validations)
+@given(user_name=text())
+def test_should_create_user(user_name: str) -> None:
+    interactor = UserInteractor(user_repository=InMemoryUserRepository())
     assert interactor.create_user(user_name) is not None
 
 
-def test_should_create_multiple_users(interactor: UserInteractor) -> None:
-    key_1 = interactor.create_user(f"{random_string()} 1")
-    key_2 = interactor.create_user(f"{random_string()} 2")
+def test_should_create_multiple_users(user_interactor: UserInteractor) -> None:
+    key_1 = user_interactor.create_user(f"{random_string()} 1")
+    key_2 = user_interactor.create_user(f"{random_string()} 2")
 
     assert key_1 != key_2
 
 
-@given(user_name=text(min_size=MIN_LENGTH, max_size=MAX_LENGTH))
-def test_should_create_wallet_for_user(user_name: str, validations: List[IUsernameValidation]) -> None:
-    interactor = UserInteractor(user_repository=InMemoryUserRepository(), validations=validations)
-
-    key = interactor.create_user(user_name)
-
-    assert interactor.create_wallet(key) is not None
+def test_should_store_usernames_persistently(
+    user_interactor: UserInteractor, memory_user_repository: InMemoryUserRepository
+) -> None:
+    user_interactor.create_user("User 1")
+    assert memory_user_repository.has_username("User 1")
 
 
-def test_should_not_create_wallet_for_invalid_user(interactor: UserInteractor) -> None:
-    key = random_string()
-
-    with pytest.raises(InvalidApiKeyException):
-        interactor.create_wallet(key)
-
-
-def test_should_store_api_keys_persistently(validations: List[IUsernameValidation]) -> None:
-    memory_repository = InMemoryUserRepository()
-
-    interactor = UserInteractor(user_repository=memory_repository, validations=validations)
-    key = interactor.create_user("User 1")
-
-    interactor = UserInteractor(user_repository=memory_repository, validations=validations)
-    assert interactor.create_wallet(key) is not None
+def test_should_store_api_keys_persistently(
+    user_interactor: UserInteractor, memory_user_repository: InMemoryUserRepository
+) -> None:
+    key = user_interactor.create_user("User 1")
+    assert memory_user_repository.has_api_key(key)
 
 
-def test_should_not_allow_duplicate_names(interactor: UserInteractor) -> None:
-    interactor.create_user("User 1")
+def test_should_not_allow_duplicate_names(user_interactor: UserInteractor) -> None:
+    user_interactor.create_user("User 1")
     with pytest.raises(InvalidUsernameException):
-        interactor.create_user("User 1")
+        user_interactor.create_user("User 1")
 
 
-@given(user_name=text(max_size=4))
-def test_should_not_allow_short_names(user_name: str, validations: List[IUsernameValidation]) -> None:
-    interactor = UserInteractor(user_repository=InMemoryUserRepository(), validations=validations)
+@given(user_name=text(max_size=7))
+def test_should_not_allow_short_names(user_name: str) -> None:
+    interactor = UserInteractor(
+        min_length=8,
+        user_repository=InMemoryUserRepository(),
+    )
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)
 
 
 @given(user_name=text(min_size=21))
-def test_should_not_allow_long_names(user_name: str, validations: List[IUsernameValidation]) -> None:
-    interactor = UserInteractor(user_repository=InMemoryUserRepository(), validations=validations)
+def test_should_not_allow_long_names(user_name: str) -> None:
+    interactor = UserInteractor(
+        max_length=20,
+        user_repository=InMemoryUserRepository(),
+    )
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)

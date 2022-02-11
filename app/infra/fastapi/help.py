@@ -17,6 +17,7 @@ help_api = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 def fetch_help() -> Wrapped[FetchHelpResponse]:
+    """Returns a short help message for the API."""
     return Wrapped(
         status=ResponseStatus.SUCCESS,
         response=FetchHelpResponse(
