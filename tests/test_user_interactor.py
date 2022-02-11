@@ -9,7 +9,13 @@ Test List:
 """
 
 import pytest
-from core import InvalidUsernameException, UserInteractor
+from core import (
+    DuplicateUsernameValidator,
+    InvalidUsernameException,
+    LongUsernameValidator,
+    ShortUsernameValidator,
+    UserInteractor,
+)
 from hypothesis import given
 from hypothesis.strategies import text
 from infra import InMemoryUserRepository
@@ -47,7 +53,16 @@ def test_should_store_api_keys_persistently(
     assert memory_user_repository.has_api_key(key)
 
 
-def test_should_not_allow_duplicate_names(user_interactor: UserInteractor) -> None:
+def test_should_not_allow_duplicate_names(
+    memory_user_repository: InMemoryUserRepository,
+) -> None:
+    user_interactor = UserInteractor(
+        user_repository=memory_user_repository,
+        username_validations=[
+            DuplicateUsernameValidator(user_repository=memory_user_repository)
+        ],
+    )
+
     user_interactor.create_user("User 1")
     with pytest.raises(InvalidUsernameException):
         user_interactor.create_user("User 1")
@@ -56,8 +71,8 @@ def test_should_not_allow_duplicate_names(user_interactor: UserInteractor) -> No
 @given(user_name=text(max_size=7))
 def test_should_not_allow_short_names(user_name: str) -> None:
     interactor = UserInteractor(
-        min_length=8,
         user_repository=InMemoryUserRepository(),
+        username_validations=[ShortUsernameValidator(min_length=8)],
     )
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)
@@ -66,8 +81,8 @@ def test_should_not_allow_short_names(user_name: str) -> None:
 @given(user_name=text(min_size=21))
 def test_should_not_allow_long_names(user_name: str) -> None:
     interactor = UserInteractor(
-        max_length=20,
         user_repository=InMemoryUserRepository(),
+        username_validations=[LongUsernameValidator(max_length=20)],
     )
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)

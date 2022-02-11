@@ -3,7 +3,13 @@ from .exception import (
     InvalidUsernameException,
     InvalidWalletRequestException,
 )
-from .wallet_validation import (
+from .username_validator import (
+    DuplicateUsernameValidator,
+    IUsernameValidator,
+    LongUsernameValidator,
+    ShortUsernameValidator,
+)
+from .wallet_validator import (
     IWalletValidator,
     WalletApiKeyValidator,
     WalletLimitValidator,

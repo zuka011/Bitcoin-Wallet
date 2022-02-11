@@ -4,11 +4,15 @@ from .repositories import IUserRepository, IWalletRepository, Wallet
 from .services import BitcoinWalletService
 from .transactions import TransactionInteractor
 from .users import UserInteractor
-from .validations import (
+from .validators import (
+    DuplicateUsernameValidator,
     InvalidApiKeyException,
     InvalidUsernameException,
     InvalidWalletRequestException,
+    IUsernameValidator,
     IWalletValidator,
+    LongUsernameValidator,
+    ShortUsernameValidator,
     WalletApiKeyValidator,
     WalletLimitValidator,
 )
