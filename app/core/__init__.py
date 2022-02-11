@@ -10,4 +10,4 @@ from .validations import (
     WalletApiKeyValidator,
     WalletLimitValidator,
 )
-from .wallets import WalletInteractor
+from .wallets import IBalanceSupplier, WalletInteractor
