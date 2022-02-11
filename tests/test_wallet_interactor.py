@@ -1,9 +1,3 @@
-"""
-Test List:
-1) Create a wallet
-2) Wallet should contain a unique address and balance in BTC and USD
-"""
-
 import pytest
 from core import (
     InvalidApiKeyException,
@@ -18,6 +12,7 @@ from infra import (
     InMemoryUserRepository,
     InMemoryWalletRepository,
 )
+from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_string
 
@@ -33,6 +28,7 @@ def test_should_not_create_wallet_for_invalid_user(
     memory_user_repository: InMemoryUserRepository,
     memory_wallet_repository: InMemoryWalletRepository,
     currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
     key = random_string()
 
@@ -40,6 +36,7 @@ def test_should_not_create_wallet_for_invalid_user(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
+        system_configuration=system_configuration,
         wallet_validators=[
             WalletApiKeyValidator(user_repository=memory_user_repository)
         ],
@@ -54,11 +51,13 @@ def test_should_not_create_too_many_wallets(
     memory_user_repository: InMemoryUserRepository,
     memory_wallet_repository: InMemoryWalletRepository,
     currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
     wallet_interactor = WalletInteractor(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
+        system_configuration=system_configuration,
         wallet_validators=[
             WalletLimitValidator(
                 wallet_limit=3, wallet_repository=memory_wallet_repository
@@ -98,15 +97,12 @@ def test_should_create_unique_wallet_address_across_users(
 
 def test_should_return_correct_balance(
     user_interactor: UserInteractor,
-    memory_user_repository: InMemoryUserRepository,
-    memory_wallet_repository: InMemoryWalletRepository,
+    wallet_interactor: WalletInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
-    wallet_interactor = WalletInteractor(
-        user_repository=memory_user_repository,
-        wallet_repository=memory_wallet_repository,
-        currency_converter=StubCurrencyConverter(2),
-        initial_balance=1,
-    )
+    currency_converter.exchange_rate = 2
+    system_configuration.initial_balance = 1
 
     key = user_interactor.create_user(random_string())
     wallet = wallet_interactor.create_wallet(key)

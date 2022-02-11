@@ -1,5 +1,7 @@
+from .configurations import ISystemConfiguration
 from .converters import ICurrencyConverter
-from .repositories import IUserRepository, IWalletRepository
+from .repositories import IUserRepository, IWalletRepository, Wallet
+from .transactions import TransactionInteractor
 from .users import UserInteractor
 from .validations import (
     InvalidApiKeyException,
@@ -9,4 +11,4 @@ from .validations import (
     WalletApiKeyValidator,
     WalletLimitValidator,
 )
-from .wallets import Wallet, WalletInteractor
+from .wallets import WalletInteractor

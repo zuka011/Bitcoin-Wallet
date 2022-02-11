@@ -3,6 +3,7 @@ from core import UserInteractor, WalletInteractor
 from infra import InMemoryUserRepository, InMemoryWalletRepository
 from runner.web import setup
 from starlette.testclient import TestClient
+from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
 
 
@@ -31,6 +32,11 @@ def currency_converter() -> StubCurrencyConverter:
 
 
 @pytest.fixture
+def system_configuration() -> StubSystemConfiguration:
+    return StubSystemConfiguration()
+
+
+@pytest.fixture
 def user_interactor(memory_user_repository: InMemoryUserRepository) -> UserInteractor:
     """Returns a user interactor, preset for testing."""
     return UserInteractor(
@@ -43,10 +49,12 @@ def wallet_interactor(
     memory_user_repository: InMemoryUserRepository,
     memory_wallet_repository: InMemoryWalletRepository,
     currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
 ) -> WalletInteractor:
     """Returns a wallet interactor, preset for testing."""
     return WalletInteractor(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
+        system_configuration=system_configuration,
     )
