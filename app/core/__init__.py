@@ -1,5 +1,6 @@
 from .converters import ICurrencyConverter
 from .repositories import IUserRepository, IWalletRepository, Wallet
+from .transactions import TransactionInteractor
 from .users import UserInteractor
 from .validations import (
     InvalidApiKeyException,

@@ -13,7 +13,7 @@ class WalletInteractor:
         user_repository: IUserRepository,
         wallet_repository: IWalletRepository,
         currency_converter: ICurrencyConverter,
-        initial_balance: float = 0,
+        initial_balance: float,
         wallet_validators: Iterable[IWalletValidator] = (),
     ) -> None:
         self.__user_repository = user_repository

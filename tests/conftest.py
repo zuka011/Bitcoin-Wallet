@@ -1,9 +1,13 @@
+from typing import Final
+
 import pytest
 from core import UserInteractor, WalletInteractor
 from infra import InMemoryUserRepository, InMemoryWalletRepository
 from runner.web import setup
 from starlette.testclient import TestClient
 from stubs.currency_converter import StubCurrencyConverter
+
+DEFAULT_INITIAL_BALANCE: Final[float] = 1
 
 
 @pytest.fixture
@@ -49,4 +53,5 @@ def wallet_interactor(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
+        initial_balance=DEFAULT_INITIAL_BALANCE,
     )

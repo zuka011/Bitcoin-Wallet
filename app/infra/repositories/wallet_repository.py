@@ -22,6 +22,14 @@ class InMemoryWalletRepository:
 
         return self.__wallet_by_address[wallet_address]
 
+    def update_wallet(self, wallet: Wallet, *, wallet_address: str) -> None:
+        """Updates the wallet with the specified address."""
+        assert (
+            wallet_address in self.__wallet_by_address
+        ), f"A wallet with the address {wallet_address} does not exist."
+
+        self.__wallet_by_address[wallet_address] = wallet
+
     def get_wallet_count(self, *, api_key: str) -> int:
         """Returns the number of wallets belonging to the user with the specified API key."""
         return self.__wallet_count[api_key]

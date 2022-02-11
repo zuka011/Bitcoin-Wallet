@@ -1,10 +1,5 @@
-"""
-Test List:
-1) Create a wallet
-2) Wallet should contain a unique address and balance in BTC and USD
-"""
-
 import pytest
+from conftest import DEFAULT_INITIAL_BALANCE
 from core import (
     InvalidApiKeyException,
     InvalidWalletRequestException,
@@ -40,6 +35,7 @@ def test_should_not_create_wallet_for_invalid_user(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
+        initial_balance=DEFAULT_INITIAL_BALANCE,
         wallet_validators=[
             WalletApiKeyValidator(user_repository=memory_user_repository)
         ],
@@ -59,6 +55,7 @@ def test_should_not_create_too_many_wallets(
         user_repository=memory_user_repository,
         wallet_repository=memory_wallet_repository,
         currency_converter=currency_converter,
+        initial_balance=DEFAULT_INITIAL_BALANCE,
         wallet_validators=[
             WalletLimitValidator(
                 wallet_limit=3, wallet_repository=memory_wallet_repository

@@ -16,5 +16,8 @@ class IWalletRepository(Protocol):
     def get_wallet(self, *, wallet_address: str) -> Wallet:
         """Returns the wallet corresponding with the specified address."""
 
+    def update_wallet(self, wallet: Wallet, *, wallet_address: str) -> None:
+        """Updates the wallet with the specified address."""
+
     def get_wallet_count(self, *, api_key: str) -> int:
         """Returns the number of wallets belonging to the user with the specified API key."""
