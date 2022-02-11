@@ -1,3 +1,4 @@
+from .converters import ICurrencyConverter
 from .repositories import IUserRepository, IWalletRepository
 from .users import UserInteractor
 from .validations import (
@@ -8,3 +9,4 @@ from .validations import (
     WalletApiKeyValidator,
     WalletLimitValidator,
 )
+from .wallets import Wallet, WalletInteractor
