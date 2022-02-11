@@ -1,1 +1,1 @@
-from .interactor import InvalidApiKeyException, Wallet, WalletInteractor
+from .interactor import Wallet, WalletInteractor

@@ -5,29 +5,73 @@ Test List:
 """
 
 import pytest
-from core import InvalidApiKeyException, UserInteractor, WalletInteractor
-from infra import InMemoryUserRepository
-from infra.converters.currency_converter import CoinLayerCurrencyConverter
+from core import (
+    InvalidApiKeyException,
+    InvalidWalletRequestException,
+    UserInteractor,
+    WalletApiKeyValidator,
+    WalletInteractor,
+    WalletLimitValidator,
+)
+from infra import (
+    CoinLayerCurrencyConverter,
+    InMemoryUserRepository,
+    InMemoryWalletRepository,
+)
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_string
 
 
 def test_should_create_wallet_for_user(
-    user_interactor: UserInteractor,
-    wallet_interactor: WalletInteractor,
-    repository: InMemoryUserRepository,
+    user_interactor: UserInteractor, wallet_interactor: WalletInteractor
 ) -> None:
     key = user_interactor.create_user(random_string())
-
     assert wallet_interactor.create_wallet(key) is not None
 
 
 def test_should_not_create_wallet_for_invalid_user(
-    wallet_interactor: WalletInteractor,
+    memory_user_repository: InMemoryUserRepository,
+    memory_wallet_repository: InMemoryWalletRepository,
+    currency_converter: StubCurrencyConverter,
 ) -> None:
     key = random_string()
 
+    wallet_interactor = WalletInteractor(
+        user_repository=memory_user_repository,
+        wallet_repository=memory_wallet_repository,
+        currency_converter=currency_converter,
+        wallet_validators=[
+            WalletApiKeyValidator(user_repository=memory_user_repository)
+        ],
+    )
+
     with pytest.raises(InvalidApiKeyException):
+        wallet_interactor.create_wallet(key)
+
+
+def test_should_not_create_too_many_wallets(
+    user_interactor: UserInteractor,
+    memory_user_repository: InMemoryUserRepository,
+    memory_wallet_repository: InMemoryWalletRepository,
+    currency_converter: StubCurrencyConverter,
+) -> None:
+    wallet_interactor = WalletInteractor(
+        user_repository=memory_user_repository,
+        wallet_repository=memory_wallet_repository,
+        currency_converter=currency_converter,
+        wallet_validators=[
+            WalletLimitValidator(
+                wallet_limit=3, wallet_repository=memory_wallet_repository
+            )
+        ],
+    )
+
+    key = user_interactor.create_user("Bla bla user")
+    wallet_interactor.create_wallet(key)
+    wallet_interactor.create_wallet(key)
+    wallet_interactor.create_wallet(key)
+
+    with pytest.raises(InvalidWalletRequestException):
         wallet_interactor.create_wallet(key)
 
 
@@ -53,11 +97,14 @@ def test_should_create_unique_wallet_address_across_users(
 
 
 def test_should_return_correct_balance(
-    user_interactor: UserInteractor, repository: InMemoryUserRepository
+    user_interactor: UserInteractor,
+    memory_user_repository: InMemoryUserRepository,
+    memory_wallet_repository: InMemoryWalletRepository,
 ) -> None:
     wallet_interactor = WalletInteractor(
-        user_repository=repository,
-        currency_converter=StubCurrencyConverter(exchange_rate=2),
+        user_repository=memory_user_repository,
+        wallet_repository=memory_wallet_repository,
+        currency_converter=StubCurrencyConverter(2),
         initial_balance=1,
     )
 

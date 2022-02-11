@@ -1,1 +1,1 @@
-from .interactor import InvalidUsernameException, UserInteractor
+from .interactor import UserInteractor

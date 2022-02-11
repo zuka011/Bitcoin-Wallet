@@ -2,10 +2,7 @@ from typing import Optional
 from uuid import uuid4
 
 from core.repositories import IUserRepository
-
-
-class InvalidUsernameException(Exception):
-    pass
+from core.validations import InvalidUsernameException
 
 
 class UserInteractor:

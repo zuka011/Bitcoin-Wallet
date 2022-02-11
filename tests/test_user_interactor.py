@@ -12,7 +12,7 @@ import pytest
 from core import InvalidUsernameException, UserInteractor
 from hypothesis import given
 from hypothesis.strategies import text
-from infra.repositories import InMemoryUserRepository
+from infra import InMemoryUserRepository
 from utils import random_string
 
 
@@ -22,9 +22,7 @@ def test_should_create_user_interactor(user_interactor: UserInteractor) -> None:
 
 @given(user_name=text())
 def test_should_create_user(user_name: str) -> None:
-    interactor = UserInteractor(
-        user_repository=InMemoryUserRepository(),
-    )
+    interactor = UserInteractor(user_repository=InMemoryUserRepository())
     assert interactor.create_user(user_name) is not None
 
 
@@ -36,17 +34,17 @@ def test_should_create_multiple_users(user_interactor: UserInteractor) -> None:
 
 
 def test_should_store_usernames_persistently(
-    user_interactor: UserInteractor, repository: InMemoryUserRepository
+    user_interactor: UserInteractor, memory_user_repository: InMemoryUserRepository
 ) -> None:
     user_interactor.create_user("User 1")
-    assert repository.has_username("User 1")
+    assert memory_user_repository.has_username("User 1")
 
 
 def test_should_store_api_keys_persistently(
-    user_interactor: UserInteractor, repository: InMemoryUserRepository
+    user_interactor: UserInteractor, memory_user_repository: InMemoryUserRepository
 ) -> None:
     key = user_interactor.create_user("User 1")
-    assert repository.has_api_key(key)
+    assert memory_user_repository.has_api_key(key)
 
 
 def test_should_not_allow_duplicate_names(user_interactor: UserInteractor) -> None:

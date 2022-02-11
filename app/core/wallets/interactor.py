@@ -1,13 +1,10 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Iterable
 from uuid import uuid4
 
-from core import IUserRepository
 from core.converters.currency_converter import ICurrencyConverter
-
-
-class InvalidApiKeyException(Exception):
-    pass
+from core.repositories import IUserRepository, IWalletRepository
+from core.validations import IWalletValidator
 
 
 @dataclass(frozen=True)
@@ -22,18 +19,24 @@ class WalletInteractor:
         self,
         *,
         user_repository: IUserRepository,
+        wallet_repository: IWalletRepository,
         currency_converter: ICurrencyConverter,
         initial_balance: float = 0,
+        wallet_validators: Iterable[IWalletValidator] = (),
     ) -> None:
         self.__user_repository = user_repository
+        self.__wallet_repository = wallet_repository
         self.__initial_balance = initial_balance
         self.__currency_converter = currency_converter
+        self.__wallet_validators = wallet_validators
 
         self.__wallets: Dict[str, Wallet] = {}
 
     def create_wallet(self, api_key: str) -> Wallet:
-        if not self.__user_repository.has_api_key(api_key):
-            raise InvalidApiKeyException(f"{api_key} is not a valid API key.")
+        for validator in self.__wallet_validators:
+            validator.validate_request(api_key=api_key)
+
+        self.__wallet_repository.add_wallet(api_key=api_key)
 
         wallet = Wallet(
             address=str(uuid4()),
