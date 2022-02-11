@@ -18,6 +18,7 @@ class UserInteractor:
         self.__user_repository = user_repository
 
     def create_user(self, username: str) -> str:
+        """Creates a user with the specified username and returns a newly generated API key."""
         if len(username) < self.__min_length:
             raise InvalidUsernameException("Username is too short")
 

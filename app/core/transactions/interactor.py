@@ -32,6 +32,10 @@ class TransactionInteractor:
         destination_address: str,
         amount_btc: float,
     ) -> None:
+        """Transfers the specified amount from the source to the destination wallet. The API key of the owner
+        of the source wallet is required for a successful transaction.
+
+        :raises InvalidApiKeyException if the API key is not that of the owner of the source wallet."""
         if not self.__wallet_repository.is_wallet_owner(
             wallet_address=source_address, api_key=api_key
         ):
