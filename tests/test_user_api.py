@@ -9,7 +9,7 @@ from utils import random_string
 
 
 @dataclass
-class UserTestClient:
+class Client:
     test_client: TestClient
 
     def create_user(self, username: str) -> Response:
@@ -18,12 +18,12 @@ class UserTestClient:
 
 
 @pytest.fixture
-def client(test_client: TestClient) -> UserTestClient:
-    return UserTestClient(test_client)
+def client(test_client: TestClient) -> Client:
+    return Client(test_client)
 
 
 def test_should_create_user(
-    client: UserTestClient, memory_user_repository: InMemoryUserRepository
+    client: Client, memory_user_repository: InMemoryUserRepository
 ) -> None:
     username = random_string()
     response = client.create_user(username)
