@@ -2,7 +2,11 @@ import pytest
 from clients.user import UserClient
 from clients.wallet import WalletClient
 from core import TransactionInteractor, UserInteractor, WalletInteractor
-from infra import InMemoryUserRepository, InMemoryWalletRepository
+from infra import (
+    InMemoryTransactionRepository,
+    InMemoryUserRepository,
+    InMemoryWalletRepository,
+)
 from runner.web import setup
 from starlette.testclient import TestClient
 from stubs.configuration import StubSystemConfiguration
@@ -19,6 +23,12 @@ def memory_user_repository() -> InMemoryUserRepository:
 def memory_wallet_repository() -> InMemoryWalletRepository:
     """Returns an in-memory implementation of a wallet repository."""
     return InMemoryWalletRepository()
+
+
+@pytest.fixture
+def memory_transaction_repository() -> InMemoryTransactionRepository:
+    """Returns an in-memory implementation of a transaction repository."""
+    return InMemoryTransactionRepository()
 
 
 @pytest.fixture
@@ -60,12 +70,14 @@ def wallet_interactor(
 @pytest.fixture
 def transaction_interactor(
     memory_wallet_repository: InMemoryWalletRepository,
+    memory_transaction_repository: InMemoryTransactionRepository,
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> TransactionInteractor:
     """Returns a transaction interactor, preset for testing."""
     return TransactionInteractor(
         wallet_repository=memory_wallet_repository,
+        transaction_repository=memory_transaction_repository,
         currency_converter=currency_converter,
         system_configuration=system_configuration,
     )

@@ -12,4 +12,8 @@ from .fastapi import (
     user_api,
     wallet_api,
 )
-from .repositories import InMemoryUserRepository, InMemoryWalletRepository
+from .repositories import (
+    InMemoryTransactionRepository,
+    InMemoryUserRepository,
+    InMemoryWalletRepository,
+)
