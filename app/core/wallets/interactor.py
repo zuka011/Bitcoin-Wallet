@@ -48,4 +48,12 @@ class WalletInteractor:
         ):
             raise InvalidApiKeyException("The address or API key is invalid.")
 
-        return self.__wallet_repository.get_wallet(wallet_address=address)
+        balance = self.__wallet_repository.get_wallet(
+            wallet_address=address
+        ).balance_btc
+
+        return Wallet(
+            address=address,
+            balance_btc=balance,
+            balance_usd=self.__currency_converter.to_usd(balance),
+        )
