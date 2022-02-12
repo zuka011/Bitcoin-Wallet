@@ -1,4 +1,5 @@
 import pytest
+from clients.statistics import StatisticsClient
 from clients.transaction import TransactionClient
 from clients.user import UserClient
 from clients.wallet import WalletClient
@@ -150,3 +151,9 @@ def wallet_client(test_client: TestClient) -> WalletClient:
 def transaction_client(test_client: TestClient) -> TransactionClient:
     """Returns a convenient test client for the Transaction API."""
     return TransactionClient(test_client)
+
+
+@pytest.fixture
+def statistics_client(test_client: TestClient) -> StatisticsClient:
+    """Returns a convenient test client for the Statistics API."""
+    return StatisticsClient(test_client)

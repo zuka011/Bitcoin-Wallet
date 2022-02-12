@@ -1,5 +1,6 @@
 from typing import Iterable
 
+from core.statistics import StatisticsInteractor
 from core.transactions import Transaction, TransactionInteractor
 from core.users import UserInteractor
 from core.wallets import Wallet, WalletInteractor
@@ -12,10 +13,12 @@ class BitcoinWalletService:
         user_interactor: UserInteractor,
         wallet_interactor: WalletInteractor,
         transaction_interactor: TransactionInteractor,
+        statistics_interactor: StatisticsInteractor,
     ) -> None:
         self.__user_interactor = user_interactor
         self.__wallet_interactor = wallet_interactor
         self.__transaction_interactor = transaction_interactor
+        self.__statistics_interactor = statistics_interactor
 
     def create_user(self, username: str) -> str:
         """Creates a user with the specified username and returns a newly generated API key."""
@@ -61,3 +64,11 @@ class BitcoinWalletService:
     def get_user_transactions(self, *, api_key: str) -> Iterable[Transaction]:
         """Returns all transactions associated with the user with the specified API key."""
         return self.__transaction_interactor.get_user_transactions(api_key=api_key)
+
+    def get_total_transactions(self, *, api_key: str) -> int:
+        """Returns the total number of performed transactions on the platform."""
+        return self.__statistics_interactor.get_total_transactions(api_key=api_key)
+
+    def get_platform_profit(self, *, api_key: str) -> float:
+        """Returns the total profit received by the system."""
+        return self.__statistics_interactor.get_platform_profit(api_key=api_key)

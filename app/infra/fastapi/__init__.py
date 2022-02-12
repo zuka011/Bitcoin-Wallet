@@ -1,4 +1,5 @@
 from .help import FetchHelpResponse, help_api
+from .statistics import FetchStatisticsRequest, FetchStatisticsResponse, statistics_api
 from .transaction import (
     CreateTransactionRequest,
     CreateTransactionResponse,
