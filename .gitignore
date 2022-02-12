@@ -14,3 +14,5 @@
 **/build
 **/*.egg-info
 
+# Ignore SQLite generated files.
+**/*.sqlite

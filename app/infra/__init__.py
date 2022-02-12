@@ -28,3 +28,9 @@ from .repositories import (
     InMemoryUserRepository,
     InMemoryWalletRepository,
 )
+from .sqlite import (
+    InMemoryConnectionFactory,
+    ISqliteConnectionFactory,
+    SqliteConnectionFactory,
+    SqliteUserRepository,
+)
