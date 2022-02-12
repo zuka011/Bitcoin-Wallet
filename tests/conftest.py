@@ -1,3 +1,5 @@
+from typing import Iterator
+
 import pytest
 from clients.statistics import StatisticsClient
 from clients.transaction import TransactionClient
@@ -10,10 +12,15 @@ from core import (
     WalletInteractor,
 )
 from infra import (
+    InMemoryConnectionFactory,
     InMemoryStatisticsRepository,
     InMemoryTransactionRepository,
     InMemoryUserRepository,
     InMemoryWalletRepository,
+    SqliteStatisticsRepository,
+    SqliteTransactionRepository,
+    SqliteUserRepository,
+    SqliteWalletRepository,
 )
 from runner.web import setup
 from starlette.testclient import TestClient
@@ -57,6 +64,69 @@ def currency_converter() -> StubCurrencyConverter:
 def system_configuration() -> StubSystemConfiguration:
     """Returns a test stub for a system configuration."""
     return StubSystemConfiguration()
+
+
+@pytest.fixture
+def memory_connection_factory() -> InMemoryConnectionFactory:
+    """Returns an in-memory SQLite connection factory."""
+    return InMemoryConnectionFactory()
+
+
+@pytest.fixture
+def sqlite_user_repository(
+    memory_connection_factory: InMemoryConnectionFactory,
+) -> Iterator[SqliteUserRepository]:
+    """Returns an in-memory SQLite user repository."""
+    with SqliteUserRepository(
+        connection_factory=memory_connection_factory,
+        init_files=["data_base/users.sql"],
+    ) as repository:
+        yield repository
+
+
+@pytest.fixture
+def sqlite_wallet_repository(
+    memory_connection_factory: InMemoryConnectionFactory,
+) -> Iterator[SqliteWalletRepository]:
+    """Returns an in-memory SQLite wallet repository."""
+    with SqliteWalletRepository(
+        connection_factory=memory_connection_factory,
+        init_files=["data_base/users.sql", "data_base/wallets.sql"],
+    ) as repository:
+        yield repository
+
+
+@pytest.fixture
+def sqlite_transaction_repository(
+    memory_connection_factory: InMemoryConnectionFactory,
+) -> Iterator[SqliteTransactionRepository]:
+    """Returns an in-memory SQLite transaction repository."""
+    with SqliteTransactionRepository(
+        connection_factory=memory_connection_factory,
+        init_files=[
+            "data_base/users.sql",
+            "data_base/wallets.sql",
+            "data_base/transactions.sql",
+        ],
+    ) as repository:
+        yield repository
+
+
+@pytest.fixture
+def sqlite_statistics_repository(
+    memory_connection_factory: InMemoryConnectionFactory,
+) -> Iterator[SqliteStatisticsRepository]:
+    """Returns an in-memory SQLite statistics repository."""
+    with SqliteStatisticsRepository(
+        connection_factory=memory_connection_factory,
+        init_files=[
+            "data_base/users.sql",
+            "data_base/wallets.sql",
+            "data_base/transactions.sql",
+            "data_base/statistics.sql",
+        ],
+    ) as repository:
+        yield repository
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
+from typing import Optional
 
 import pytest
 from core import (
@@ -13,13 +13,7 @@ from core import (
 from infra import InMemoryTransactionRepository
 from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
-from utils import random_api_key, random_string
-
-
-def sort_transactions(transactions: Iterable[Transaction]) -> List[Transaction]:
-    """Returns a sorted list of all transactions in the specified iterable. The transactions
-    are sorted by their timestamp in ascending order."""
-    return sorted(transactions, key=lambda transaction: transaction.timestamp)
+from utils import random_api_key, random_string, sort_transactions
 
 
 @dataclass(frozen=True)
