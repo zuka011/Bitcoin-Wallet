@@ -1,9 +1,15 @@
 from .configurations import ISystemConfiguration
 from .converters import ICurrencyConverter
 from .currencies import Currency
-from .repositories import IUserRepository, IWalletRepository, WalletEntry
+from .repositories import (
+    ITransactionRepository,
+    IUserRepository,
+    IWalletRepository,
+    TransactionEntry,
+    WalletEntry,
+)
 from .services import BitcoinWalletService
-from .transactions import TransactionInteractor
+from .transactions import Transaction, TransactionInteractor
 from .users import UserInteractor
 from .validators import (
     DuplicateUsernameValidator,

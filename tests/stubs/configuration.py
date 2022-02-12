@@ -9,6 +9,7 @@ class StubSystemConfiguration:
     primary_currency: Currency = Currency.BTC
     same_user_transfer_fee: float = 0
     cross_user_transfer_fee: float = 0
+    system_wallet_address: str = "STUB_SYSTEM"
 
     def get_initial_balance(self) -> float:
         """Returns the initial balance of wallets."""
@@ -25,3 +26,8 @@ class StubSystemConfiguration:
     def get_cross_user_transfer_fee_percentage(self) -> float:
         """Returns the transfer fee (in percentages), for cross-user transfers."""
         return self.cross_user_transfer_fee
+
+    def get_system_wallet_address(self) -> str:
+        """Returns the address of the system wallet. This is where all transactions fees are
+        deposited to."""
+        return self.system_wallet_address

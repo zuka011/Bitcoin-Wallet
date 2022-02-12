@@ -24,11 +24,6 @@ class Wallet:
         """Returns the unique address of this wallet."""
         return self.__wallet_entry.address
 
-    @property
-    def primary_currency(self) -> Currency:
-        """Returns the primary currency of this wallet."""
-        return self.__wallet_entry.currency
-
     def __eq__(self, other: Any) -> bool:
         assert isinstance(other, Wallet), f"Cannot compare a Wallet with {type(other)}."
 

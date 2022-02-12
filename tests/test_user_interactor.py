@@ -1,13 +1,3 @@
-"""
-Test List:
-1) Users should be able to register.                👾
-2) API keys should be unique.                       👾
-3) User should not be able to register with duplicate username. ?
-4) Should create wallet for users.                  👾
-5) Should not create wallet for invalid users.      👾
-6) Duplicate usernames should throw an exception.   👾
-"""
-
 import pytest
 from core import (
     DuplicateUsernameValidator,

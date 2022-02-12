@@ -4,15 +4,16 @@ from .fastapi import (
     CreateUserResponse,
     CreateWalletRequest,
     CreateWalletResponse,
-    Error,
     FetchHelpResponse,
     FetchWalletRequest,
     FetchWalletResponse,
-    ResponseStatus,
     WalletModel,
-    Wrapped,
     help_api,
     user_api,
     wallet_api,
 )
-from .repositories import InMemoryUserRepository, InMemoryWalletRepository
+from .repositories import (
+    InMemoryTransactionRepository,
+    InMemoryUserRepository,
+    InMemoryWalletRepository,
+)
