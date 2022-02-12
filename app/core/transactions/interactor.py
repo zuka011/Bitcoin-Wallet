@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Final, Iterable
+from uuid import uuid4
 
 from core.configurations import ISystemConfiguration
 from core.converters import ICurrencyConverter
@@ -70,13 +71,24 @@ class TransactionInteractor:
     def get_transactions(
         self, *, wallet_address: str, api_key: str
     ) -> Iterable[Transaction]:
-        """Returns all transactions associated with the specified wallet address."""
+        """Returns all transactions associated with the specified wallet address.
+
+        :raises InvalidApiKeyException if the API key is not that of the owner of the wallet."""
         self.__validate_owner(wallet_address=wallet_address, api_key=api_key)
 
         return (
             Transaction(transaction_entry=transaction)
             for transaction in self.__transaction_repository.get_transactions(
                 wallet_address=wallet_address
+            )
+        )
+
+    def get_user_transactions(self, *, api_key: str) -> Iterable[Transaction]:
+        """Returns all transactions associated with the user with the specified API key."""
+        return (
+            Transaction(transaction_entry=transaction)
+            for transaction in self.__transaction_repository.get_user_transactions(
+                api_key=api_key
             )
         )
 
@@ -158,13 +170,12 @@ class TransactionInteractor:
         deposit_amount: float,
     ) -> None:
         """Stores a transaction describing a withdrawal from the source wallet."""
-        timestamp = datetime.now()
-
         transaction = TransactionEntry(
+            id=str(uuid4()),
             source_address=source_address,
             destination_address=destination_address,
             amount=deposit_amount,
-            timestamp=timestamp,
+            timestamp=datetime.now(),
         )
 
         # Link main transaction with first wallet.
@@ -181,10 +192,11 @@ class TransactionInteractor:
             # Link system fee transaction (deposit to system wallet) with first wallet.
             self.__transaction_repository.add_transaction(
                 TransactionEntry(
+                    id=str(uuid4()),
                     source_address=source_address,
                     destination_address=self.__system_configuration.get_system_wallet_address(),
                     amount=(withdraw_amount - deposit_amount),
-                    timestamp=timestamp,
+                    timestamp=datetime.now(),
                 ),
                 wallet_address=source_address,
             )

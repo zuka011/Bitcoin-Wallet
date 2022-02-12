@@ -8,6 +8,11 @@ class Transaction:
         self.__transaction_entry = transaction_entry
 
     @property
+    def id(self) -> str:
+        """Returns the unique ID of this transaction."""
+        return self.__transaction_entry.id
+
+    @property
     def source_address(self) -> str:
         """Returns the source wallet address in this transaction."""
         return self.__transaction_entry.source_address

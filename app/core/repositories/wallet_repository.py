@@ -26,3 +26,6 @@ class IWalletRepository(Protocol):
 
     def is_wallet_owner(self, *, wallet_address: str, api_key: str) -> bool:
         """Returns true if wallet belongs to user with the specified API key."""
+
+    def get_wallet_owner(self, *, wallet_address: str) -> str:
+        """Returns the API key of the owner of the specified wallet."""
