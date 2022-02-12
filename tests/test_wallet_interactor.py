@@ -14,7 +14,7 @@ from infra import (
 )
 from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
-from utils import random_string
+from utils import random_api_key, random_string
 
 
 def test_should_create_wallet_for_user(
@@ -116,7 +116,17 @@ def test_should_retrieve_wallet(
     key = user_interactor.create_user(random_string())
     wallet = wallet_interactor.create_wallet(api_key=key)
 
-    assert wallet_interactor.get_wallet(address=wallet.address) == wallet
+    assert wallet_interactor.get_wallet(address=wallet.address, api_key=key) == wallet
+
+
+def test_should_not_retrieve_wallet_with_incorrect_api_key(
+    user_interactor: UserInteractor, wallet_interactor: WalletInteractor
+) -> None:
+    key = user_interactor.create_user(random_string())
+    wallet = wallet_interactor.create_wallet(api_key=key)
+
+    with pytest.raises(InvalidApiKeyException):
+        wallet_interactor.get_wallet(address=wallet.address, api_key=random_api_key())
 
 
 def test_should_get_real_time_balance() -> None:

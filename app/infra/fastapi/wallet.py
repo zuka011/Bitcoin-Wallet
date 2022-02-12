@@ -29,6 +29,14 @@ class CreateWalletResponse(BaseModel):
     wallet: WalletModel
 
 
+class FetchWalletRequest(BaseModel):
+    api_key: str
+
+
+class FetchWalletResponse(BaseModel):
+    wallet: WalletModel
+
+
 wallet_api = APIRouter()
 
 
@@ -45,5 +53,25 @@ def create_wallet(
     return Wrapped.from_response(
         CreateWalletResponse(
             wallet=WalletModel.get_from(core.create_wallet(request.api_key))
+        )
+    )
+
+
+@wallet_api.get(
+    path="/wallets/{address}",
+    response_model=Wrapped[FetchWalletResponse],
+    status_code=status.HTTP_200_OK,
+)
+def fetch_wallet(
+    address: str,
+    request: FetchWalletRequest,
+    core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
+) -> Wrapped[FetchWalletResponse]:
+    """Fetches the wallet at the specified address."""
+    return Wrapped.from_response(
+        FetchWalletResponse(
+            wallet=WalletModel.get_from(
+                core.get_wallet(address=address, api_key=request.api_key)
+            )
         )
     )

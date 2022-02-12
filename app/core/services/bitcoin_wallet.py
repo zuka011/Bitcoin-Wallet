@@ -17,3 +17,7 @@ class BitcoinWalletService:
     def create_wallet(self, api_key: str) -> Wallet:
         """Creates a wallet for the user with the specified API key and returns it."""
         return self.__wallet_interactor.create_wallet(api_key)
+
+    def get_wallet(self, *, address: str, api_key: str) -> Wallet:
+        """Returns the wallet corresponding to the specified unique address."""
+        return self.__wallet_interactor.get_wallet(address=address, api_key=api_key)

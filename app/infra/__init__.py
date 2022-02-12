@@ -6,6 +6,8 @@ from .fastapi import (
     CreateWalletResponse,
     Error,
     FetchHelpResponse,
+    FetchWalletRequest,
+    FetchWalletResponse,
     ResponseStatus,
     WalletModel,
     Wrapped,

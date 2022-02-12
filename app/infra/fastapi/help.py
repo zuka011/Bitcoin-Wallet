@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from infra.fastapi.response import ResponseStatus, Wrapped
+from infra.fastapi.response import Wrapped
 from pydantic import BaseModel
 from starlette import status
 
@@ -18,12 +18,11 @@ help_api = APIRouter()
 )
 def fetch_help() -> Wrapped[FetchHelpResponse]:
     """Returns a short help message for the API."""
-    return Wrapped(
-        status=ResponseStatus.SUCCESS,
-        response=FetchHelpResponse(
+    return Wrapped.from_response(
+        FetchHelpResponse(
             help_message=(
                 "Hello, this is a small Bitcoin Wallet server application.\n"
                 "Currently it doesn't do much, but it will soon!\n"
             )
-        ),
+        )
     )
