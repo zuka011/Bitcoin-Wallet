@@ -1,3 +1,4 @@
+import pytest
 from clients.statistics import StatisticsClient
 from clients.transaction import TransactionClient
 from clients.user import UserClient
@@ -60,6 +61,6 @@ def test_should_return_platform_statistics(
     statistics = parse_response(response, FetchStatisticsResponse)
 
     assert statistics.transactions == 2
-    assert statistics.total_profit == 0.1
+    assert statistics.total_profit == pytest.approx(0.1)
 
     assert response.status_code == status.HTTP_200_OK
