@@ -1,18 +1,25 @@
 import requests
+from core import Currency
 
-URL = "http://api.coinlayer.com/live"
+URL = "https://api.nomics.com/v1/exchange-rates"
 
 
 class CoinLayerCurrencyConverter:
     @staticmethod
-    def to_usd(btc: float) -> float:
+    def convert(amount: float, *, source: Currency, target: Currency) -> float:
+        """Converts the specified amount of the source currency to the target."""
+        assert (
+            target == Currency.USD
+        ), f"Cannot convert to currencies other than {Currency.USD}."
+
         response = requests.get(
             URL,
             params={
-                "access_key": "26f4a505fccdbd8501cd54b2fcbfe9d3",
-                "target": "USD",
-                "symbols": "BTC",
+                "key": "12d10c6f43b7d4babf0c0f42d5ff7cfc8afc38a0",
             },
         )
-        rate = float(response.json()["rates"]["BTC"])
-        return rate * btc
+        rates = dict((rate["currency"], rate["rate"]) for rate in response.json())
+        assert source in rates, f"There is not data on the currency {source}."
+
+        rate = float(rates[source])
+        return amount * rate

@@ -1,6 +1,5 @@
-from core.repositories import Wallet
 from core.users import UserInteractor
-from core.wallets import WalletInteractor
+from core.wallets import Wallet, WalletInteractor
 
 
 class BitcoinWalletService:

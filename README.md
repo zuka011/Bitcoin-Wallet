@@ -2,7 +2,7 @@
 
 ## Intro
 
-The aim of the project is to create an HTTP API for a "Bitcoin Wallet" application.
+The aim of the project is to create an HTTP API for a "Bitcoin WalletEntry" application.
 
 Worry not, we will not do any blockchain operations. Instead, we will use SQLite for persistence. However, I hope (fingers crossed) at this point you have enough knowledge to create a solution that one can (relatively) easily extend to use Postgres/MySQL, or even a real blockchain.
 

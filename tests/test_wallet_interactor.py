@@ -1,7 +1,9 @@
 import pytest
 from core import (
+    Currency,
     InvalidApiKeyException,
     InvalidWalletRequestException,
+    TransactionInteractor,
     UserInteractor,
     WalletApiKeyValidator,
     WalletInteractor,
@@ -101,13 +103,13 @@ def test_should_return_correct_balance(
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> None:
-    currency_converter.exchange_rate = 2
+    currency_converter.btc_to_usd = 2
     system_configuration.initial_balance = 1
 
     key = user_interactor.create_user(random_string())
     wallet = wallet_interactor.create_wallet(key)
-    assert wallet.balance_btc == 1
-    assert wallet.balance_usd == 2
+    assert wallet.get_balance(currency=Currency.BTC) == 1
+    assert wallet.get_balance(currency=Currency.USD) == 2
 
 
 def test_should_retrieve_wallet(
@@ -130,4 +132,29 @@ def test_should_not_retrieve_wallet_with_incorrect_api_key(
 
 
 def test_should_get_real_time_balance() -> None:
-    assert CoinLayerCurrencyConverter.to_usd(5) is not None
+    assert (
+        CoinLayerCurrencyConverter.convert(5, source=Currency.BTC, target=Currency.USD)
+        is not None
+    )
+
+
+def test_should_return_correct_funds_after_exchange_rate_changes(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    currency_converter.btc_to_usd = 2
+    system_configuration.initial_balance = 10
+    system_configuration.same_user_transfer_fee = 0
+
+    key = user_interactor.create_user("User")
+    address = wallet_interactor.create_wallet(key).address
+
+    currency_converter.btc_to_usd = 3
+
+    wallet = wallet_interactor.get_wallet(address=address, api_key=key)
+
+    assert wallet.get_balance(currency=Currency.BTC) == 10
+    assert wallet.get_balance(currency=Currency.USD) == 30

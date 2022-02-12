@@ -5,29 +5,15 @@ Test List:
 """
 import pytest
 from core import (
+    Currency,
     InvalidApiKeyException,
     TransactionInteractor,
     UserInteractor,
     WalletInteractor,
 )
-from infra import InMemoryWalletRepository
 from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_api_key, random_string
-
-
-@pytest.fixture
-def transaction_interactor(
-    memory_wallet_repository: InMemoryWalletRepository,
-    currency_converter: StubCurrencyConverter,
-    system_configuration: StubSystemConfiguration,
-) -> TransactionInteractor:
-    """Returns a transaction interactor, preset for testing."""
-    return TransactionInteractor(
-        wallet_repository=memory_wallet_repository,
-        currency_converter=currency_converter,
-        system_configuration=system_configuration,
-    )
 
 
 def test_should_transfer_funds_for_user(
@@ -37,7 +23,7 @@ def test_should_transfer_funds_for_user(
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> None:
-    currency_converter.exchange_rate = 2
+    currency_converter.btc_to_usd = 2
     system_configuration.initial_balance = 1
     system_configuration.same_user_transfer_fee = 50  # Percent
 
@@ -49,16 +35,16 @@ def test_should_transfer_funds_for_user(
         api_key=key,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
-        amount_btc=0.5,
+        amount=0.5,
     )
 
     new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address, api_key=key)
     new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address, api_key=key)
 
-    assert new_wallet_1.balance_btc == 0.5
-    assert new_wallet_1.balance_usd == 1
-    assert new_wallet_2.balance_btc == 1.25
-    assert new_wallet_2.balance_usd == 2.5
+    assert new_wallet_1.get_balance(currency=Currency.BTC) == 0.5
+    assert new_wallet_1.get_balance(currency=Currency.USD) == 1
+    assert new_wallet_2.get_balance(currency=Currency.BTC) == 1.25
+    assert new_wallet_2.get_balance(currency=Currency.USD) == 2.5
 
 
 def test_should_transfer_funds_between_users(
@@ -68,7 +54,7 @@ def test_should_transfer_funds_between_users(
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> None:
-    currency_converter.exchange_rate = 5
+    currency_converter.btc_to_usd = 5
     system_configuration.initial_balance = 2
     system_configuration.cross_user_transfer_fee = 25  # Percent
 
@@ -82,16 +68,16 @@ def test_should_transfer_funds_between_users(
         api_key=key_1,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
-        amount_btc=2,
+        amount=2,
     )
 
     new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address, api_key=key_1)
     new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address, api_key=key_2)
 
-    assert new_wallet_1.balance_btc == 0
-    assert new_wallet_1.balance_usd == 0
-    assert new_wallet_2.balance_btc == 3.5
-    assert new_wallet_2.balance_usd == 17.5
+    assert new_wallet_1.get_balance(currency=Currency.BTC) == 0
+    assert new_wallet_1.get_balance(currency=Currency.USD) == 0
+    assert new_wallet_2.get_balance(currency=Currency.BTC) == 3.5
+    assert new_wallet_2.get_balance(currency=Currency.USD) == 17.5
 
 
 def test_should_not_transfer_funds_with_incorrect_api_key(
@@ -110,5 +96,73 @@ def test_should_not_transfer_funds_with_incorrect_api_key(
             api_key=incorrect_key,
             source_address=wallet_1.address,
             destination_address=wallet_2.address,
-            amount_btc=0.5,
+            amount=0.5,
         )
+
+
+def test_should_return_correct_currencies_after_exchange_rate_change_before_transaction(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    currency_converter.btc_to_usd = 5
+    system_configuration.initial_balance = 2
+
+    key_1 = user_interactor.create_user("User 1")
+    wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
+
+    key_2 = user_interactor.create_user("User 2")
+    wallet_2 = wallet_interactor.create_wallet(api_key=key_2)
+
+    currency_converter.btc_to_usd = 10
+
+    transaction_interactor.transfer(
+        api_key=key_1,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=2,
+    )
+
+    new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address, api_key=key_1)
+    new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address, api_key=key_2)
+
+    assert new_wallet_1.get_balance(currency=Currency.BTC) == 0
+    assert new_wallet_1.get_balance(currency=Currency.USD) == 0
+    assert new_wallet_2.get_balance(currency=Currency.BTC) == 4
+    assert new_wallet_2.get_balance(currency=Currency.USD) == 40
+
+
+def test_should_return_correct_currencies_after_exchange_rate_change_after_transaction(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    currency_converter.btc_to_usd = 5
+    system_configuration.initial_balance = 2
+
+    key_1 = user_interactor.create_user("User 1")
+    wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
+
+    key_2 = user_interactor.create_user("User 2")
+    wallet_2 = wallet_interactor.create_wallet(api_key=key_2)
+
+    transaction_interactor.transfer(
+        api_key=key_1,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=2,
+    )
+
+    currency_converter.btc_to_usd = 10
+
+    new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address, api_key=key_1)
+    new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address, api_key=key_2)
+
+    assert new_wallet_1.get_balance(currency=Currency.BTC) == 0
+    assert new_wallet_1.get_balance(currency=Currency.USD) == 0
+    assert new_wallet_2.get_balance(currency=Currency.BTC) == 4
+    assert new_wallet_2.get_balance(currency=Currency.USD) == 40

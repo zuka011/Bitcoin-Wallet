@@ -1,4 +1,6 @@
-from core import BitcoinWalletService, Wallet
+from typing import Dict
+
+from core import BitcoinWalletService, Currency, Wallet
 from fastapi import APIRouter, Depends
 from infra.fastapi.dependables import get_bitcoin_wallet_service
 from infra.fastapi.response import Wrapped
@@ -8,16 +10,17 @@ from starlette import status
 
 class WalletModel(BaseModel):
     address: str
-    balance_btc: float
-    balance_usd: float
+    balance: Dict[Currency, float]
 
     @staticmethod
     def get_from(wallet: Wallet) -> "WalletModel":
         """Creates a new wallet model from the specified specified wallet."""
         return WalletModel(
             address=wallet.address,
-            balance_btc=wallet.balance_btc,
-            balance_usd=wallet.balance_usd,
+            balance={
+                Currency.BTC: wallet.get_balance(currency=Currency.BTC),
+                Currency.USD: wallet.get_balance(currency=Currency.USD),
+            },
         )
 
 
