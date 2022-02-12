@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Final, Iterable
+from uuid import uuid4
 
 from core.configurations import ISystemConfiguration
 from core.converters import ICurrencyConverter
@@ -169,13 +170,12 @@ class TransactionInteractor:
         deposit_amount: float,
     ) -> None:
         """Stores a transaction describing a withdrawal from the source wallet."""
-        timestamp = datetime.now()
-
         transaction = TransactionEntry(
+            id=str(uuid4()),
             source_address=source_address,
             destination_address=destination_address,
             amount=deposit_amount,
-            timestamp=timestamp,
+            timestamp=datetime.now(),
         )
 
         # Link main transaction with first wallet.
@@ -192,10 +192,11 @@ class TransactionInteractor:
             # Link system fee transaction (deposit to system wallet) with first wallet.
             self.__transaction_repository.add_transaction(
                 TransactionEntry(
+                    id=str(uuid4()),
                     source_address=source_address,
                     destination_address=self.__system_configuration.get_system_wallet_address(),
                     amount=(withdraw_amount - deposit_amount),
-                    timestamp=timestamp,
+                    timestamp=datetime.now(),
                 ),
                 wallet_address=source_address,
             )

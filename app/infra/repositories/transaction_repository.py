@@ -23,9 +23,7 @@ class InMemoryTransactionRepository:
         )
 
         self.__transactions_by_address[wallet_address].append(transaction)
-
-        if transaction not in self.__transactions_by_key[api_key]:
-            self.__transactions_by_key[api_key].append(transaction)
+        self.__transactions_by_key[api_key].append(transaction)
 
     def get_transactions(self, *, wallet_address: str) -> Iterable[TransactionEntry]:
         """Returns all transactions associated with the specified wallet address."""

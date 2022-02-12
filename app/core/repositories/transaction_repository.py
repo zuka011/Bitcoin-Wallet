@@ -5,6 +5,7 @@ from typing import Iterable, Protocol
 
 @dataclass
 class TransactionEntry:
+    id: str
     source_address: str
     destination_address: str
     amount: float

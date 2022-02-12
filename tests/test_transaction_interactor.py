@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 import pytest
 from core import (
@@ -24,6 +24,7 @@ def sort_transactions(transactions: Iterable[Transaction]) -> List[Transaction]:
 
 @dataclass(frozen=True)
 class TransactionExpectation:
+    expected_id: Optional[str]
     expected_source_address: str
     expected_destination_address: str
     expected_amount: float
@@ -32,21 +33,26 @@ class TransactionExpectation:
         """Checks the specified transaction against the built expectations."""
         assert transaction is not None
 
+        if self.expected_id is not None:
+            assert transaction.id == self.expected_id
+
         assert transaction.source_address == self.expected_source_address
         assert transaction.destination_address == self.expected_destination_address
-        assert transaction.amount == self.expected_amount
+        assert transaction.amount == pytest.approx(self.expected_amount)
 
         return self
 
 
 def expect_transaction(
     *,
+    transaction_id: Optional[str] = None,
     source_address: str,
     destination_address: str,
     amount: float,
 ) -> TransactionExpectation:
     """Prepares an expectation for a transaction."""
     return TransactionExpectation(
+        expected_id=transaction_id,
         expected_source_address=source_address,
         expected_destination_address=destination_address,
         expected_amount=amount,
@@ -169,6 +175,7 @@ def test_should_return_transactions_for_wallet(
     assert len(transactions_2) == 1
 
     expect_transaction(
+        transaction_id=transactions_1[0].id,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
         amount=0.5,
@@ -215,12 +222,14 @@ def test_should_return_transactions_between_users(
     assert len(transactions_2) == 2
 
     expect_transaction(
+        transaction_id=transactions_1[0].id,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
         amount=0.5,
     ).given(transactions_1[0]).given(transactions_2[0])
 
     expect_transaction(
+        transaction_id=transactions_1[1].id,
         source_address=wallet_2.address,
         destination_address=wallet_1.address,
         amount=0.5,
@@ -263,6 +272,7 @@ def test_should_include_transaction_fees_in_transactions(
     assert len(transactions_2) == 1
 
     expect_transaction(
+        transaction_id=transactions_1[0].id,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
         amount=0.25,
@@ -303,6 +313,7 @@ def test_should_store_transactions_persistently(
     assert len(transactions_2) == 1
 
     expect_transaction(
+        transaction_id=transactions_1[0].id,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
         amount=0.5,
@@ -425,8 +436,7 @@ def test_should_return_transactions_for_user(
     wallet_3 = wallet_interactor.create_wallet(api_key=key_2)
     wallet_4 = wallet_interactor.create_wallet(api_key=key_3)
 
-    # This transaction is between wallets of the same user, however, it should
-    # appear only once.
+    # This transaction is between wallets of the same user.
     transaction_interactor.transfer(
         api_key=key_1,
         source_address=wallet_1.address,
@@ -458,24 +468,70 @@ def test_should_return_transactions_for_user(
         transaction_interactor.get_user_transactions(api_key=key_3)
     )
 
-    assert len(transactions_1) == 3
+    assert len(transactions_1) == 4
     assert len(transactions_2) == 1
     assert len(transactions_3) == 1
 
     expect_transaction(
+        transaction_id=transactions_1[0].id,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
         amount=0.5,
-    ).given(transactions_1[0])
+    ).given(transactions_1[0]).given(transactions_1[1])
 
     expect_transaction(
+        transaction_id=transactions_1[2].id,
         source_address=wallet_2.address,
         destination_address=wallet_3.address,
         amount=0.5,
-    ).given(transactions_1[1]).given(transactions_2[0])
+    ).given(transactions_1[2]).given(transactions_2[0])
 
     expect_transaction(
+        transaction_id=transactions_1[3].id,
         source_address=wallet_1.address,
         destination_address=wallet_4.address,
         amount=0.5,
-    ).given(transactions_1[2]).given(transactions_3[0])
+    ).given(transactions_1[3]).given(transactions_3[0])
+
+
+def test_should_include_transaction_fees_in_transactions_for_user(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    currency_converter.btc_to_usd = 2
+    system_configuration.initial_balance = 1
+    system_configuration.same_user_transfer_fee = 25
+
+    key = user_interactor.create_user(random_string())
+    wallet_1 = wallet_interactor.create_wallet(api_key=key)
+    wallet_2 = wallet_interactor.create_wallet(api_key=key)
+
+    # This transaction is between wallets of the same user.
+    transaction_interactor.transfer(
+        api_key=key,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.4,
+    )
+
+    transactions = sort_transactions(
+        transaction_interactor.get_user_transactions(api_key=key)
+    )
+
+    assert len(transactions) == 3
+
+    expect_transaction(
+        transaction_id=transactions[0].id,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.3,
+    ).given(transactions[0]).given(transactions[1])
+
+    expect_transaction(
+        source_address=wallet_1.address,
+        destination_address=system_configuration.get_system_wallet_address(),
+        amount=0.1,
+    ).given(transactions[2])
