@@ -15,3 +15,7 @@ class ISystemConfiguration(Protocol):
 
     def get_cross_user_transfer_fee_percentage(self) -> float:
         """Returns the transfer fee (in percentages), for cross-user transfers."""
+
+    def get_system_wallet_address(self) -> str:
+        """Returns the address of the system wallet. This is where all transactions fees are
+        deposited to."""

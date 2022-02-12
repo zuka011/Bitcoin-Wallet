@@ -6,6 +6,7 @@ INITIAL_BALANCE: Final[float] = 1.0
 PRIMARY_CURRENCY: Final[Currency] = Currency.BTC
 SAME_USER_FEE: Final[float] = 0.0
 CROSS_USER_FEE: Final[float] = 1.5
+SYSTEM_WALLET_ADDRESS: Final[str] = "SYSTEM"
 
 
 class SystemConfiguration:
@@ -28,3 +29,9 @@ class SystemConfiguration:
     def get_cross_user_transfer_fee_percentage() -> float:
         """Returns the transfer fee (in percentages), for cross-user transfers."""
         return CROSS_USER_FEE
+
+    @staticmethod
+    def get_system_wallet_address() -> str:
+        """Returns the address of the system wallet. This is where all transactions fees are
+        deposited to."""
+        return SYSTEM_WALLET_ADDRESS

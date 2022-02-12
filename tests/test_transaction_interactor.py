@@ -1,7 +1,3 @@
-"""
-Test List:
-1) Should record correct transactions if there are transaction fees.
-"""
 from dataclasses import dataclass
 
 import pytest
@@ -221,6 +217,60 @@ def test_should_return_transactions_between_users(
         destination_address=wallet_1.address,
         amount=0.5,
     ).given(transactions_1[1]).given(transactions_2[1])
+
+
+def test_should_include_transaction_fees_in_transactions(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    key_1 = user_interactor.create_user(random_string())
+    key_2 = user_interactor.create_user(random_string())
+    wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
+    wallet_2 = wallet_interactor.create_wallet(api_key=key_2)
+
+    system_configuration.cross_user_transfer_fee = 50  # Percent.
+
+    transaction_interactor.transfer(
+        api_key=key_1,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.5,
+    )
+
+    transactions_1 = tuple(
+        transaction_interactor.get_transactions(
+            wallet_address=wallet_1.address, api_key=key_1
+        )
+    )
+
+    transactions_2 = tuple(
+        transaction_interactor.get_transactions(
+            wallet_address=wallet_2.address, api_key=key_2
+        )
+    )
+
+    assert len(transactions_1) == 2
+    assert len(transactions_2) == 1
+
+    TransactionExpectation().expect(
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.25,
+    ).given(transactions_1[0])
+
+    TransactionExpectation().expect(
+        source_address=wallet_1.address,
+        destination_address=system_configuration.system_wallet_address,
+        amount=0.25,
+    )
+
+    TransactionExpectation().expect(
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.25,
+    ).given(transactions_2[0])
 
 
 def test_should_not_return_transactions_for_wallet_with_invalid_api_key(
