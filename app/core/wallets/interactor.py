@@ -40,7 +40,9 @@ class WalletInteractor:
         return wallet
 
     def get_wallet(self, *, address: str, api_key: str) -> Wallet:
-        """Returns the wallet corresponding to the specified unique address."""
+        """Returns the wallet corresponding to the specified unique address.
+
+        :raises InvalidApiKeyException if the wallet does not belong to the API key."""
         if not self.__wallet_repository.is_wallet_owner(
             wallet_address=address, api_key=api_key
         ):
