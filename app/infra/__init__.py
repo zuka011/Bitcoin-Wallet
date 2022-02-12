@@ -33,4 +33,5 @@ from .sqlite import (
     ISqliteConnectionFactory,
     SqliteConnectionFactory,
     SqliteUserRepository,
+    SqliteWalletRepository,
 )

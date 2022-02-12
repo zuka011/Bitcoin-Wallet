@@ -31,6 +31,9 @@ class InMemoryWalletRepository:
         assert (
             wallet_address in self.__wallet_by_address
         ), f"A wallet with the address {wallet_address} does not exist."
+        assert (
+            wallet_address == wallet.address
+        ), "The specified wallet address differs from the one in the entry."
 
         self.__wallet_by_address[wallet_address] = wallet
 

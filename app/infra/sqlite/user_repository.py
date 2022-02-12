@@ -15,7 +15,7 @@ class SqliteUserRepository(SqliteRepository):
             "SELECT COUNT(*) FROM users WHERE api_key=:api_key",
             parameters={"api_key": api_key},
         )
-        return float(result.fetchone()[0]) > 0
+        return int(result.fetchone()[0]) > 0
 
     def has_username(self, username: str) -> bool:
         """Returns true if the specified username exists in this repository."""
@@ -23,4 +23,4 @@ class SqliteUserRepository(SqliteRepository):
             "SELECT COUNT(*) FROM users WHERE username=:username",
             parameters={"username": username},
         )
-        return float(result.fetchone()[0]) > 0
+        return int(result.fetchone()[0]) > 0

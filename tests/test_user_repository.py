@@ -1,22 +1,9 @@
-from typing import Any, Final, Iterator
+from typing import Any, Final
 
-import pytest
-from conftest import memory_user_repository
+from conftest import memory_user_repository, sqlite_user_repository
 from core import IUserRepository
-from infra import InMemoryConnectionFactory, SqliteUserRepository
 from pytest_cases import parametrize
 from utils import random_api_key, random_string
-
-
-@pytest.fixture
-def sqlite_user_repository() -> Iterator[SqliteUserRepository]:
-    """Returns an in-memory SQLite user repository."""
-    with SqliteUserRepository(
-        connection_factory=InMemoryConnectionFactory(),
-        init_files=["data_base/users.sql"],
-    ) as repository:
-        yield repository
-
 
 USER_REPOSITORIES: Final[Any] = [memory_user_repository, sqlite_user_repository]
 

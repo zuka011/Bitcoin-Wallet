@@ -1,3 +1,5 @@
+from typing import Iterator
+
 import pytest
 from clients.statistics import StatisticsClient
 from clients.transaction import TransactionClient
@@ -10,10 +12,13 @@ from core import (
     WalletInteractor,
 )
 from infra import (
+    InMemoryConnectionFactory,
     InMemoryStatisticsRepository,
     InMemoryTransactionRepository,
     InMemoryUserRepository,
     InMemoryWalletRepository,
+    SqliteUserRepository,
+    SqliteWalletRepository,
 )
 from runner.web import setup
 from starlette.testclient import TestClient
@@ -57,6 +62,36 @@ def currency_converter() -> StubCurrencyConverter:
 def system_configuration() -> StubSystemConfiguration:
     """Returns a test stub for a system configuration."""
     return StubSystemConfiguration()
+
+
+@pytest.fixture
+def memory_connection_factory() -> InMemoryConnectionFactory:
+    """Returns an in-memory SQLite connection factory."""
+    return InMemoryConnectionFactory()
+
+
+@pytest.fixture
+def sqlite_user_repository(
+    memory_connection_factory: InMemoryConnectionFactory,
+) -> Iterator[SqliteUserRepository]:
+    """Returns an in-memory SQLite user repository."""
+    with SqliteUserRepository(
+        connection_factory=memory_connection_factory,
+        init_files=["data_base/users.sql"],
+    ) as repository:
+        yield repository
+
+
+@pytest.fixture
+def sqlite_wallet_repository(
+    memory_connection_factory: InMemoryConnectionFactory,
+) -> Iterator[SqliteWalletRepository]:
+    """Returns an in-memory SQLite user repository."""
+    with SqliteWalletRepository(
+        connection_factory=memory_connection_factory,
+        init_files=["data_base/users.sql", "data_base/wallets.sql"],
+    ) as repository:
+        yield repository
 
 
 @pytest.fixture
