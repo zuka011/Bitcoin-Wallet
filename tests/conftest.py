@@ -17,6 +17,7 @@ from infra import (
     InMemoryTransactionRepository,
     InMemoryUserRepository,
     InMemoryWalletRepository,
+    SqliteTransactionRepository,
     SqliteUserRepository,
     SqliteWalletRepository,
 )
@@ -90,6 +91,22 @@ def sqlite_wallet_repository(
     with SqliteWalletRepository(
         connection_factory=memory_connection_factory,
         init_files=["data_base/users.sql", "data_base/wallets.sql"],
+    ) as repository:
+        yield repository
+
+
+@pytest.fixture
+def sqlite_transaction_repository(
+    memory_connection_factory: InMemoryConnectionFactory,
+) -> Iterator[SqliteTransactionRepository]:
+    """Returns an in-memory SQLite user repository."""
+    with SqliteTransactionRepository(
+        connection_factory=memory_connection_factory,
+        init_files=[
+            "data_base/users.sql",
+            "data_base/wallets.sql",
+            "data_base/transactions.sql",
+        ],
     ) as repository:
         yield repository
 

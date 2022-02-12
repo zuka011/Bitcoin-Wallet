@@ -32,6 +32,7 @@ from .sqlite import (
     InMemoryConnectionFactory,
     ISqliteConnectionFactory,
     SqliteConnectionFactory,
+    SqliteTransactionRepository,
     SqliteUserRepository,
     SqliteWalletRepository,
 )
