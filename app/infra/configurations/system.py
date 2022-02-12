@@ -7,6 +7,7 @@ PRIMARY_CURRENCY: Final[Currency] = Currency.BTC
 SAME_USER_FEE: Final[float] = 0.0
 CROSS_USER_FEE: Final[float] = 1.5
 SYSTEM_WALLET_ADDRESS: Final[str] = "SYSTEM"
+ADMIN_API_KEY: Final[str] = "I-AM-ADMIN.ADMIN-SMASH!"
 
 
 class SystemConfiguration:
@@ -35,3 +36,8 @@ class SystemConfiguration:
         """Returns the address of the system wallet. This is where all transactions fees are
         deposited to."""
         return SYSTEM_WALLET_ADDRESS
+
+    @staticmethod
+    def get_admin_api_key() -> str:
+        """Returns the current Admin API key for the system."""
+        return ADMIN_API_KEY

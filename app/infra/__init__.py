@@ -7,6 +7,8 @@ from .fastapi import (
     CreateWalletRequest,
     CreateWalletResponse,
     FetchHelpResponse,
+    FetchStatisticsRequest,
+    FetchStatisticsResponse,
     FetchTransactionsRequest,
     FetchTransactionsResponse,
     FetchUserTransactionsRequest,
@@ -15,11 +17,13 @@ from .fastapi import (
     FetchWalletResponse,
     WalletModel,
     help_api,
+    statistics_api,
     transaction_api,
     user_api,
     wallet_api,
 )
 from .repositories import (
+    InMemoryStatisticsRepository,
     InMemoryTransactionRepository,
     InMemoryUserRepository,
     InMemoryWalletRepository,

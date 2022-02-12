@@ -10,6 +10,7 @@ class StubSystemConfiguration:
     same_user_transfer_fee: float = 0
     cross_user_transfer_fee: float = 0
     system_wallet_address: str = "STUB_SYSTEM"
+    admin_api_key: str = "I-AM-FAKE-ADMIN.BUT-STILL-SMASH!"
 
     def get_initial_balance(self) -> float:
         """Returns the initial balance of wallets."""
@@ -31,3 +32,7 @@ class StubSystemConfiguration:
         """Returns the address of the system wallet. This is where all transactions fees are
         deposited to."""
         return self.system_wallet_address
+
+    def get_admin_api_key(self) -> str:
+        """Returns the current Admin API key for the system."""
+        return self.admin_api_key
