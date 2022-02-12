@@ -27,3 +27,8 @@ class Wrapped(GenericModel, Generic[ResponseT]):
     status: ResponseStatus
     response: Optional[ResponseT]
     error: Optional[Error]
+
+    @staticmethod
+    def from_response(response: ResponseT) -> "Wrapped[ResponseT]":
+        """Wraps the specified response into a wrapped response model."""
+        return Wrapped(status=ResponseStatus.SUCCESS, response=response)

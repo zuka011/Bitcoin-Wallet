@@ -52,8 +52,8 @@ def test_should_transfer_funds_for_user(
         amount_btc=0.5,
     )
 
-    new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address)
-    new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address)
+    new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address, api_key=key)
+    new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address, api_key=key)
 
     assert new_wallet_1.balance_btc == 0.5
     assert new_wallet_1.balance_usd == 1
@@ -85,8 +85,8 @@ def test_should_transfer_funds_between_users(
         amount_btc=2,
     )
 
-    new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address)
-    new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address)
+    new_wallet_1 = wallet_interactor.get_wallet(address=wallet_1.address, api_key=key_1)
+    new_wallet_2 = wallet_interactor.get_wallet(address=wallet_2.address, api_key=key_2)
 
     assert new_wallet_1.balance_btc == 0
     assert new_wallet_1.balance_usd == 0

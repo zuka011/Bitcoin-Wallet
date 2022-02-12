@@ -4,7 +4,7 @@ from uuid import uuid4
 from core.configurations import ISystemConfiguration
 from core.converters.currency_converter import ICurrencyConverter
 from core.repositories import IUserRepository, IWalletRepository, Wallet
-from core.validators import IWalletValidator
+from core.validators import InvalidApiKeyException, IWalletValidator
 
 
 class WalletInteractor:
@@ -39,6 +39,13 @@ class WalletInteractor:
         self.__wallet_repository.add_wallet(wallet, api_key=api_key)
         return wallet
 
-    def get_wallet(self, *, address: str) -> Wallet:
-        """Returns the wallet corresponding to the specified unique address."""
+    def get_wallet(self, *, address: str, api_key: str) -> Wallet:
+        """Returns the wallet corresponding to the specified unique address.
+
+        :raises InvalidApiKeyException if the wallet does not belong to the API key."""
+        if not self.__wallet_repository.is_wallet_owner(
+            wallet_address=address, api_key=api_key
+        ):
+            raise InvalidApiKeyException("The address or API key is invalid.")
+
         return self.__wallet_repository.get_wallet(wallet_address=address)
