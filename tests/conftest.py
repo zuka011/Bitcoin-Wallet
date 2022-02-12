@@ -1,4 +1,5 @@
 import pytest
+from clients.transaction import TransactionClient
 from clients.user import UserClient
 from clients.wallet import WalletClient
 from core import TransactionInteractor, UserInteractor, WalletInteractor
@@ -89,6 +90,7 @@ def transaction_interactor(
 def test_client(
     memory_user_repository: InMemoryUserRepository,
     memory_wallet_repository: InMemoryWalletRepository,
+    memory_transaction_repository: InMemoryTransactionRepository,
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> TestClient:
@@ -97,6 +99,7 @@ def test_client(
         setup(
             user_repository=memory_user_repository,
             wallet_repository=memory_wallet_repository,
+            transaction_repository=memory_transaction_repository,
             currency_converter=currency_converter,
             system_configuration=system_configuration,
         )
@@ -113,3 +116,9 @@ def user_client(test_client: TestClient) -> UserClient:
 def wallet_client(test_client: TestClient) -> WalletClient:
     """Returns a convenient test client for the Wallet API."""
     return WalletClient(test_client)
+
+
+@pytest.fixture
+def transaction_client(test_client: TestClient) -> TransactionClient:
+    """Returns a convenient test client for the Transaction API."""
+    return TransactionClient(test_client)
