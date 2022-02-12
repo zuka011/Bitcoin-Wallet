@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Iterable, Protocol
 
 
@@ -7,6 +8,7 @@ class TransactionEntry:
     source_address: str
     destination_address: str
     amount: float
+    timestamp: datetime
 
 
 class ITransactionRepository(Protocol):

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Final, Iterable
 
 from core.configurations import ISystemConfiguration
@@ -157,10 +158,13 @@ class TransactionInteractor:
         deposit_amount: float,
     ) -> None:
         """Stores a transaction describing a withdrawal from the source wallet."""
+        timestamp = datetime.now()
+
         transaction = TransactionEntry(
             source_address=source_address,
             destination_address=destination_address,
             amount=deposit_amount,
+            timestamp=timestamp,
         )
 
         # Link main transaction with first wallet.
@@ -180,6 +184,7 @@ class TransactionInteractor:
                     source_address=source_address,
                     destination_address=self.__system_configuration.get_system_wallet_address(),
                     amount=(withdraw_amount - deposit_amount),
+                    timestamp=timestamp,
                 ),
                 wallet_address=source_address,
             )

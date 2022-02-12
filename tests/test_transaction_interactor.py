@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Iterable, List
 
 import pytest
 from core import (
@@ -9,9 +10,16 @@ from core import (
     UserInteractor,
     WalletInteractor,
 )
+from infra import InMemoryTransactionRepository
 from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_api_key, random_string
+
+
+def sort_transactions(transactions: Iterable[Transaction]) -> List[Transaction]:
+    """Returns a sorted list of all transactions in the specified iterable. The transactions
+    are sorted by their timestamp in ascending order."""
+    return sorted(transactions, key=lambda transaction: transaction.timestamp)
 
 
 @dataclass(init=False)
@@ -145,13 +153,13 @@ def test_should_return_transactions_for_wallet(
         amount=0.5,
     )
 
-    transactions_1 = tuple(
+    transactions_1 = list(
         transaction_interactor.get_transactions(
             wallet_address=wallet_1.address, api_key=key
         )
     )
 
-    transactions_2 = tuple(
+    transactions_2 = list(
         transaction_interactor.get_transactions(
             wallet_address=wallet_2.address, api_key=key
         )
@@ -191,13 +199,13 @@ def test_should_return_transactions_between_users(
         amount=0.5,
     )
 
-    transactions_1 = tuple(
+    transactions_1 = sort_transactions(
         transaction_interactor.get_transactions(
             wallet_address=wallet_1.address, api_key=key_1
         )
     )
 
-    transactions_2 = tuple(
+    transactions_2 = sort_transactions(
         transaction_interactor.get_transactions(
             wallet_address=wallet_2.address, api_key=key_2
         )
@@ -239,13 +247,13 @@ def test_should_include_transaction_fees_in_transactions(
         amount=0.5,
     )
 
-    transactions_1 = tuple(
+    transactions_1 = sort_transactions(
         transaction_interactor.get_transactions(
             wallet_address=wallet_1.address, api_key=key_1
         )
     )
 
-    transactions_2 = tuple(
+    transactions_2 = sort_transactions(
         transaction_interactor.get_transactions(
             wallet_address=wallet_2.address, api_key=key_2
         )
@@ -258,19 +266,55 @@ def test_should_include_transaction_fees_in_transactions(
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
         amount=0.25,
-    ).given(transactions_1[0])
+    ).given(transactions_1[0]).given(transactions_2[0])
 
     TransactionExpectation().expect(
         source_address=wallet_1.address,
         destination_address=system_configuration.system_wallet_address,
         amount=0.25,
+    ).given(transactions_1[1])
+
+
+def test_should_store_transactions_persistently(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    memory_transaction_repository: InMemoryTransactionRepository,
+) -> None:
+    key = user_interactor.create_user(random_string())
+    wallet_1 = wallet_interactor.create_wallet(api_key=key)
+    wallet_2 = wallet_interactor.create_wallet(api_key=key)
+
+    transaction_interactor.transfer(
+        api_key=key,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.5,
     )
+
+    transactions_1 = list(
+        memory_transaction_repository.get_transactions(wallet_address=wallet_1.address)
+    )
+    transactions_2 = list(
+        memory_transaction_repository.get_transactions(wallet_address=wallet_2.address)
+    )
+
+    assert len(transactions_1) == 1
+    assert len(transactions_2) == 1
 
     TransactionExpectation().expect(
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
-        amount=0.25,
-    ).given(transactions_2[0])
+        amount=0.5,
+    ).given(
+        Transaction(
+            transaction_entry=transactions_1[0],
+        )
+    ).given(
+        Transaction(
+            transaction_entry=transactions_2[0],
+        )
+    )
 
 
 def test_should_not_return_transactions_for_wallet_with_invalid_api_key(
