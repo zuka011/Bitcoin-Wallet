@@ -45,12 +45,7 @@ class TransactionInteractor:
         of the source wallet is required for a successful transaction.
 
         :raises InvalidApiKeyException if the API key is not that of the owner of the source wallet."""
-        if not self.__wallet_repository.is_wallet_owner(
-            wallet_address=source_address, api_key=api_key
-        ):
-            raise InvalidApiKeyException(
-                f"Cannot transfer funds from {source_address} with incorrect API key."
-            )
+        self.__validate_owner(wallet_address=source_address, api_key=api_key)
 
         transfer_fee = self.__get_transfer_fee(
             destination_address=destination_address, api_key=api_key
@@ -85,12 +80,23 @@ class TransactionInteractor:
         self, *, wallet_address: str, api_key: str
     ) -> Iterable[Transaction]:
         """Returns all transactions associated with the specified wallet address."""
+        self.__validate_owner(wallet_address=wallet_address, api_key=api_key)
+
         return (
             Transaction(transaction_entry=transaction)
             for transaction in self.__transaction_repository.get_transactions(
                 wallet_address=wallet_address
             )
         )
+
+    def __validate_owner(self, *, wallet_address: str, api_key: str) -> None:
+        """Validates if the given wallet belongs to the user with the specified API key."""
+        if not self.__wallet_repository.is_wallet_owner(
+            wallet_address=wallet_address, api_key=api_key
+        ):
+            raise InvalidApiKeyException(
+                "The specified source wallet or API key doesn't exist."
+            )
 
     def __get_transfer_fee(self, *, destination_address: str, api_key: str) -> float:
         """Returns the transfer fee for transferring to the specified wallet address."""

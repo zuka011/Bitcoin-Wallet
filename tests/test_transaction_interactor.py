@@ -1,8 +1,8 @@
 """
 Test List:
-1) Should transfer funds from one wallet to another.    👾
-2) Should update balance of wallets in all currencies.  👾
+1) Should record correct transactions if there are transaction fees.
 """
+from dataclasses import dataclass
 
 import pytest
 from core import (
@@ -17,32 +17,36 @@ from stubs.configuration import StubSystemConfiguration
 from stubs.currency_converter import StubCurrencyConverter
 from utils import random_api_key, random_string
 
-expected_source_address: str
-expected_destination_address: str
-expected_amount: float
 
+@dataclass(init=False)
+class TransactionExpectation:
+    expected_source_address: str
+    expected_destination_address: str
+    expected_amount: float
 
-def expect(
-    *,
-    source_address: str,
-    destination_address: str,
-    amount: float,
-) -> None:
-    """Prepares an expectation for a transaction."""
-    global expected_source_address, expected_destination_address, expected_amount
+    def expect(
+        self,
+        *,
+        source_address: str,
+        destination_address: str,
+        amount: float,
+    ) -> "TransactionExpectation":
+        """Prepares an expectation for a transaction."""
+        self.expected_source_address = source_address
+        self.expected_destination_address = destination_address
+        self.expected_amount = amount
 
-    expected_source_address = source_address
-    expected_destination_address = destination_address
-    expected_amount = amount
+        return self
 
+    def given(self, transaction: Transaction) -> "TransactionExpectation":
+        """Checks the specified transaction against the built expectations."""
+        assert transaction is not None
 
-def given(transaction: Transaction) -> None:
-    """Checks the specified transaction against the built expectations."""
-    assert transaction is not None
+        assert transaction.source_address == self.expected_source_address
+        assert transaction.destination_address == self.expected_destination_address
+        assert transaction.amount == self.expected_amount
 
-    assert transaction.source_address == expected_source_address
-    assert transaction.destination_address == expected_destination_address
-    assert transaction.amount == expected_amount
+        return self
 
 
 def test_should_transfer_funds_for_user(
@@ -160,14 +164,85 @@ def test_should_return_transactions_for_wallet(
     assert len(transactions_1) == 1
     assert len(transactions_2) == 1
 
-    expect(
+    TransactionExpectation().expect(
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.5,
+    ).given(transactions_1[0]).given(transactions_2[0])
+
+
+def test_should_return_transactions_between_users(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+) -> None:
+    key_1 = user_interactor.create_user(random_string())
+    key_2 = user_interactor.create_user(random_string())
+    wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
+    wallet_2 = wallet_interactor.create_wallet(api_key=key_2)
+
+    transaction_interactor.transfer(
+        api_key=key_1,
         source_address=wallet_1.address,
         destination_address=wallet_2.address,
         amount=0.5,
     )
 
-    given(transactions_1[0])
-    given(transactions_2[0])
+    transaction_interactor.transfer(
+        api_key=key_2,
+        source_address=wallet_2.address,
+        destination_address=wallet_1.address,
+        amount=0.5,
+    )
+
+    transactions_1 = tuple(
+        transaction_interactor.get_transactions(
+            wallet_address=wallet_1.address, api_key=key_1
+        )
+    )
+
+    transactions_2 = tuple(
+        transaction_interactor.get_transactions(
+            wallet_address=wallet_2.address, api_key=key_2
+        )
+    )
+
+    assert len(transactions_1) == 2
+    assert len(transactions_2) == 2
+
+    TransactionExpectation().expect(
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.5,
+    ).given(transactions_1[0]).given(transactions_2[0])
+
+    TransactionExpectation().expect(
+        source_address=wallet_2.address,
+        destination_address=wallet_1.address,
+        amount=0.5,
+    ).given(transactions_1[1]).given(transactions_2[1])
+
+
+def test_should_not_return_transactions_for_wallet_with_invalid_api_key(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+) -> None:
+    key = user_interactor.create_user(random_string())
+    wallet_1 = wallet_interactor.create_wallet(api_key=key)
+    wallet_2 = wallet_interactor.create_wallet(api_key=key)
+
+    transaction_interactor.transfer(
+        api_key=key,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.5,
+    )
+
+    with pytest.raises(InvalidApiKeyException):
+        transaction_interactor.get_transactions(
+            wallet_address=wallet_1.address, api_key=random_api_key()
+        )
 
 
 def test_should_return_correct_currencies_after_exchange_rate_change_before_transaction(
