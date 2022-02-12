@@ -1,6 +1,7 @@
 from core import (
     BitcoinWalletService,
     ICurrencyConverter,
+    IStatisticsRepository,
     ISystemConfiguration,
     ITransactionRepository,
     IUserRepository,
@@ -18,6 +19,7 @@ def setup(
     user_repository: IUserRepository,
     wallet_repository: IWalletRepository,
     transaction_repository: ITransactionRepository,
+    statistics_repository: IStatisticsRepository,
     currency_converter: ICurrencyConverter,
     system_configuration: ISystemConfiguration
 ) -> FastAPI:
@@ -38,6 +40,7 @@ def setup(
         transaction_interactor=TransactionInteractor(
             wallet_repository=wallet_repository,
             transaction_repository=transaction_repository,
+            statistics_repository=statistics_repository,
             currency_converter=currency_converter,
             system_configuration=system_configuration,
         ),

@@ -1,5 +1,6 @@
 from infra import (
     CoinLayerCurrencyConverter,
+    InMemoryStatisticsRepository,
     InMemoryTransactionRepository,
     InMemoryUserRepository,
     InMemoryWalletRepository,
@@ -15,6 +16,7 @@ app = setup(
     transaction_repository=InMemoryTransactionRepository(
         wallet_repository=wallet_repository
     ),
+    statistics_repository=InMemoryStatisticsRepository(),
     currency_converter=CoinLayerCurrencyConverter(),
     system_configuration=SystemConfiguration(),
 )

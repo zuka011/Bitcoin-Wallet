@@ -20,6 +20,7 @@ from .fastapi import (
     wallet_api,
 )
 from .repositories import (
+    InMemoryStatisticsRepository,
     InMemoryTransactionRepository,
     InMemoryUserRepository,
     InMemoryWalletRepository,

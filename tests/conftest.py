@@ -2,8 +2,14 @@ import pytest
 from clients.transaction import TransactionClient
 from clients.user import UserClient
 from clients.wallet import WalletClient
-from core import TransactionInteractor, UserInteractor, WalletInteractor
+from core import (
+    StatisticsInteractor,
+    TransactionInteractor,
+    UserInteractor,
+    WalletInteractor,
+)
 from infra import (
+    InMemoryStatisticsRepository,
     InMemoryTransactionRepository,
     InMemoryUserRepository,
     InMemoryWalletRepository,
@@ -32,6 +38,12 @@ def memory_transaction_repository(
 ) -> InMemoryTransactionRepository:
     """Returns an in-memory implementation of a transaction repository."""
     return InMemoryTransactionRepository(wallet_repository=memory_wallet_repository)
+
+
+@pytest.fixture
+def memory_statistics_repository() -> InMemoryStatisticsRepository:
+    """Returns an in-memory implementation of a statistics repository."""
+    return InMemoryStatisticsRepository()
 
 
 @pytest.fixture
@@ -74,6 +86,7 @@ def wallet_interactor(
 def transaction_interactor(
     memory_wallet_repository: InMemoryWalletRepository,
     memory_transaction_repository: InMemoryTransactionRepository,
+    memory_statistics_repository: InMemoryStatisticsRepository,
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> TransactionInteractor:
@@ -81,7 +94,20 @@ def transaction_interactor(
     return TransactionInteractor(
         wallet_repository=memory_wallet_repository,
         transaction_repository=memory_transaction_repository,
+        statistics_repository=memory_statistics_repository,
         currency_converter=currency_converter,
+        system_configuration=system_configuration,
+    )
+
+
+@pytest.fixture
+def statistics_interactor(
+    memory_statistics_repository: InMemoryStatisticsRepository,
+    system_configuration: StubSystemConfiguration,
+) -> StatisticsInteractor:
+    """Returns a statistics interactor, preset for testing."""
+    return StatisticsInteractor(
+        statistics_repository=memory_statistics_repository,
         system_configuration=system_configuration,
     )
 
@@ -91,6 +117,7 @@ def test_client(
     memory_user_repository: InMemoryUserRepository,
     memory_wallet_repository: InMemoryWalletRepository,
     memory_transaction_repository: InMemoryTransactionRepository,
+    memory_statistics_repository: InMemoryStatisticsRepository,
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> TestClient:
@@ -100,6 +127,7 @@ def test_client(
             user_repository=memory_user_repository,
             wallet_repository=memory_wallet_repository,
             transaction_repository=memory_transaction_repository,
+            statistics_repository=memory_statistics_repository,
             currency_converter=currency_converter,
             system_configuration=system_configuration,
         )

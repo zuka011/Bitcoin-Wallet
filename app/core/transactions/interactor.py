@@ -6,6 +6,7 @@ from core.configurations import ISystemConfiguration
 from core.converters import ICurrencyConverter
 from core.currencies import Currency
 from core.repositories import (
+    IStatisticsRepository,
     ITransactionRepository,
     IWalletRepository,
     TransactionEntry,
@@ -28,11 +29,13 @@ class TransactionInteractor:
         *,
         wallet_repository: IWalletRepository,
         transaction_repository: ITransactionRepository,
+        statistics_repository: IStatisticsRepository,
         currency_converter: ICurrencyConverter,
         system_configuration: ISystemConfiguration,
     ) -> None:
         self.__wallet_repository = wallet_repository
         self.__transaction_repository = transaction_repository
+        self.__statistics_repository = statistics_repository
         self.__currency_converter = currency_converter
         self.__system_configuration = system_configuration
 
@@ -170,6 +173,7 @@ class TransactionInteractor:
         deposit_amount: float,
     ) -> None:
         """Stores a transaction describing a withdrawal from the source wallet."""
+        platform_profit = withdraw_amount - deposit_amount
         transaction = TransactionEntry(
             id=str(uuid4()),
             source_address=source_address,
@@ -188,15 +192,20 @@ class TransactionInteractor:
             transaction, wallet_address=destination_address
         )
 
-        if withdraw_amount != deposit_amount:
+        self.__statistics_repository.add_transaction()
+
+        if platform_profit != 0:
             # Link system fee transaction (deposit to system wallet) with first wallet.
             self.__transaction_repository.add_transaction(
                 TransactionEntry(
                     id=str(uuid4()),
                     source_address=source_address,
                     destination_address=self.__system_configuration.get_system_wallet_address(),
-                    amount=(withdraw_amount - deposit_amount),
+                    amount=platform_profit,
                     timestamp=datetime.now(),
                 ),
                 wallet_address=source_address,
             )
+
+            self.__statistics_repository.add_transaction()
+            self.__statistics_repository.add_platform_profit(platform_profit)

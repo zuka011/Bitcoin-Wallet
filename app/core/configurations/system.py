@@ -19,3 +19,6 @@ class ISystemConfiguration(Protocol):
     def get_system_wallet_address(self) -> str:
         """Returns the address of the system wallet. This is where all transactions fees are
         deposited to."""
+
+    def get_admin_api_key(self) -> str:
+        """Returns the current Admin API key for the system."""

@@ -2,6 +2,7 @@ from .configurations import ISystemConfiguration
 from .converters import ICurrencyConverter
 from .currencies import Currency
 from .repositories import (
+    IStatisticsRepository,
     ITransactionRepository,
     IUserRepository,
     IWalletRepository,
@@ -9,6 +10,7 @@ from .repositories import (
     WalletEntry,
 )
 from .services import BitcoinWalletService
+from .statistics import StatisticsInteractor
 from .transactions import Transaction, TransactionInteractor
 from .users import UserInteractor
 from .validators import (
