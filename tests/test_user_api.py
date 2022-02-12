@@ -1,6 +1,7 @@
 from clients.user import UserClient
 from infra import CreateUserResponse, InMemoryUserRepository
 from response_utils import parse_response
+from starlette import status
 from utils import random_string
 
 
@@ -13,3 +14,5 @@ def test_should_create_user(
 
     assert memory_user_repository.has_api_key(api_key)
     assert memory_user_repository.has_username(username)
+
+    assert response.status_code == status.HTTP_201_CREATED

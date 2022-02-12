@@ -58,9 +58,21 @@ def wallet_interactor(
 
 
 @pytest.fixture
-def test_client(memory_user_repository: InMemoryUserRepository) -> TestClient:
+def test_client(
+    memory_user_repository: InMemoryUserRepository,
+    memory_wallet_repository: InMemoryWalletRepository,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> TestClient:
     """Returns a preset test client."""
-    return TestClient(setup(user_repository=memory_user_repository))
+    return TestClient(
+        setup(
+            user_repository=memory_user_repository,
+            wallet_repository=memory_wallet_repository,
+            currency_converter=currency_converter,
+            system_configuration=system_configuration,
+        )
+    )
 
 
 @pytest.fixture

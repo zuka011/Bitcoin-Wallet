@@ -35,7 +35,7 @@ class InMemoryWalletRepository:
         return len(self.__wallets_by_api_key[api_key])
 
     def is_wallet_owner(self, *, wallet_address: str, api_key: str) -> bool:
-        """Returns true if wallet belongs to user with the specified API key."""
+        """Returns true if the wallet belongs to the user with the specified API key."""
         return any(
             wallet.address == wallet_address
             for wallet in self.__wallets_by_api_key[api_key]

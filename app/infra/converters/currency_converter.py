@@ -6,8 +6,7 @@ URL = "http://api.coinlayer.com/live"
 class CoinLayerCurrencyConverter:
     @staticmethod
     def to_usd(btc: float) -> float:
-        response = requests.request(
-            "GET",
+        response = requests.get(
             URL,
             params={
                 "access_key": "26f4a505fccdbd8501cd54b2fcbfe9d3",
