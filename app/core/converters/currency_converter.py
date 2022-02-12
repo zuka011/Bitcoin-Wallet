@@ -1,6 +1,8 @@
 from typing import Protocol
 
+from core.currencies import Currency
+
 
 class ICurrencyConverter(Protocol):
-    def to_usd(self, amount_btc: float) -> float:
-        """Converts the specified amount of BTC to USD."""
+    def convert(self, amount: float, *, source: Currency, target: Currency) -> float:
+        """Converts the specified amount of the source currency to the target."""

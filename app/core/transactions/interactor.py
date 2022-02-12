@@ -2,7 +2,8 @@ from typing import Final
 
 from core.configurations import ISystemConfiguration
 from core.converters import ICurrencyConverter
-from core.repositories import IWalletRepository, Wallet
+from core.currencies import Currency
+from core.repositories import IWalletRepository, WalletEntry
 from core.validators import InvalidApiKeyException
 
 HUNDRED_PERCENT: Final[int] = 100
@@ -30,7 +31,7 @@ class TransactionInteractor:
         api_key: str,
         source_address: str,
         destination_address: str,
-        amount_btc: float,
+        amount: float,
     ) -> None:
         """Transfers the specified amount from the source to the destination wallet. The API key of the owner
         of the source wallet is required for a successful transaction.
@@ -49,10 +50,10 @@ class TransactionInteractor:
             api_key=api_key,
         )
 
-        self.__withdraw_amount(wallet_address=source_address, amount_btc=amount_btc)
+        self.__withdraw_amount(wallet_address=source_address, amount=amount)
         self.__deposit_amount(
             wallet_address=destination_address,
-            amount_btc=amount_btc,
+            amount=amount,
             transfer_fee=transfer_fee,
         )
 
@@ -67,41 +68,43 @@ class TransactionInteractor:
         else:
             return self.__system_configuration.get_cross_user_transfer_fee_percentage()
 
-    def __withdraw_amount(self, wallet_address: str, *, amount_btc: float) -> None:
+    def __withdraw_amount(self, wallet_address: str, *, amount: float) -> None:
         """Withdraws the specified amount from the given wallet."""
         wallet = self.__get_wallet(wallet_address)
-        updated_balance_btc = wallet.balance_btc - amount_btc
+        updated_balance = wallet.balance - amount
 
         self.__update_wallet_balance(
-            wallet_address=wallet_address, balance_btc=updated_balance_btc
+            wallet_address=wallet_address,
+            balance=updated_balance,
+            currency=wallet.currency,
         )
 
     def __deposit_amount(
-        self, wallet_address: str, *, amount_btc: float, transfer_fee: float
+        self, wallet_address: str, *, amount: float, transfer_fee: float
     ) -> None:
         """Deposits the specified amount (after deducting transfer fee) to the given wallet."""
         wallet = self.__get_wallet(wallet_address)
-        updated_balance_btc = wallet.balance_btc + deduct_percentage(
-            amount_btc, transfer_fee
-        )
+        updated_balance = wallet.balance + deduct_percentage(amount, transfer_fee)
 
         self.__update_wallet_balance(
-            wallet_address=wallet_address, balance_btc=updated_balance_btc
+            wallet_address=wallet_address,
+            balance=updated_balance,
+            currency=wallet.currency,
         )
 
-    def __get_wallet(self, wallet_address: str) -> Wallet:
+    def __get_wallet(self, wallet_address: str) -> WalletEntry:
         """Returns the wallet with the specified address."""
         return self.__wallet_repository.get_wallet(wallet_address=wallet_address)
 
     def __update_wallet_balance(
-        self, wallet_address: str, *, balance_btc: float
+        self, wallet_address: str, *, balance: float, currency: Currency
     ) -> None:
         """Updates the balance of the specified wallet."""
         self.__wallet_repository.update_wallet(
-            Wallet(
+            WalletEntry(
                 address=wallet_address,
-                balance_btc=balance_btc,
-                balance_usd=self.__currency_converter.to_usd(balance_btc),
+                balance=balance,
+                currency=currency,
             ),
             wallet_address=wallet_address,
         )
