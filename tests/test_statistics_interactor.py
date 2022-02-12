@@ -28,7 +28,15 @@ def test_should_not_return_transactions_for_invalid_api_key(
         statistics_interactor.get_total_transactions(api_key=random_api_key())
 
 
-def test_should_return_transactions(
+def test_should_not_return_platform_profit_for_invalid_api_key(
+    statistics_interactor: StatisticsInteractor,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    with pytest.raises(InvalidApiKeyException):
+        statistics_interactor.get_platform_profit(api_key=random_api_key())
+
+
+def test_should_return_transactions_and_platform_profit(
     user_interactor: UserInteractor,
     wallet_interactor: WalletInteractor,
     transaction_interactor: TransactionInteractor,
@@ -69,4 +77,10 @@ def test_should_return_transactions(
             api_key=system_configuration.admin_api_key
         )
         == 5  # Including system transactions.
+    )
+    assert (
+        statistics_interactor.get_platform_profit(
+            api_key=system_configuration.admin_api_key
+        )
+        == 1
     )
