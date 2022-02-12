@@ -535,3 +535,28 @@ def test_should_include_transaction_fees_in_transactions_for_user(
         destination_address=system_configuration.get_system_wallet_address(),
         amount=0.1,
     ).given(transactions[2])
+
+
+def test_should_return_empty_transaction_list_for_user_with_invalid_api_key(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    key = user_interactor.create_user(random_string())
+    wallet_1 = wallet_interactor.create_wallet(api_key=key)
+    wallet_2 = wallet_interactor.create_wallet(api_key=key)
+
+    transaction_interactor.transfer(
+        api_key=key,
+        source_address=wallet_1.address,
+        destination_address=wallet_2.address,
+        amount=0.5,
+    )
+
+    transactions = sort_transactions(
+        transaction_interactor.get_user_transactions(api_key=random_api_key())
+    )
+
+    assert len(transactions) == 0
