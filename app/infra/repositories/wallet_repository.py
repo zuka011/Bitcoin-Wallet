@@ -9,12 +9,14 @@ class InMemoryWalletRepository:
         self.__wallets_by_api_key: Dict[str, List[WalletEntry]] = defaultdict(
             lambda: []
         )
+        self.__api_keys_by_wallet_address: Dict[str, str] = {}
         self.__wallet_by_address: Dict[str, WalletEntry] = {}
 
     def add_wallet(self, wallet: WalletEntry, *, api_key: str) -> None:
         """Adds a wallet for the user with the specified API key."""
         self.__wallets_by_api_key[api_key].append(wallet)
         self.__wallet_by_address[wallet.address] = wallet
+        self.__api_keys_by_wallet_address[wallet.address] = api_key
 
     def get_wallet(self, *, wallet_address: str) -> WalletEntry:
         """Returns the wallet corresponding with the specified address."""
@@ -38,7 +40,12 @@ class InMemoryWalletRepository:
 
     def is_wallet_owner(self, *, wallet_address: str, api_key: str) -> bool:
         """Returns true if the wallet belongs to the user with the specified API key."""
-        return any(
-            wallet.address == wallet_address
-            for wallet in self.__wallets_by_api_key[api_key]
-        )
+        return self.__api_keys_by_wallet_address[wallet_address] == api_key
+
+    def get_wallet_owner(self, *, wallet_address: str) -> str:
+        """Returns the API key of the owner of the specified wallet."""
+        assert (
+            wallet_address in self.__api_keys_by_wallet_address
+        ), f"A wallet with the address {wallet_address} does not exist."
+
+        return self.__api_keys_by_wallet_address[wallet_address]

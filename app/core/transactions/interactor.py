@@ -70,13 +70,24 @@ class TransactionInteractor:
     def get_transactions(
         self, *, wallet_address: str, api_key: str
     ) -> Iterable[Transaction]:
-        """Returns all transactions associated with the specified wallet address."""
+        """Returns all transactions associated with the specified wallet address.
+
+        :raises InvalidApiKeyException if the API key is not that of the owner of the wallet."""
         self.__validate_owner(wallet_address=wallet_address, api_key=api_key)
 
         return (
             Transaction(transaction_entry=transaction)
             for transaction in self.__transaction_repository.get_transactions(
                 wallet_address=wallet_address
+            )
+        )
+
+    def get_user_transactions(self, *, api_key: str) -> Iterable[Transaction]:
+        """Returns all transactions associated with the user with the specified API key."""
+        return (
+            Transaction(transaction_entry=transaction)
+            for transaction in self.__transaction_repository.get_user_transactions(
+                api_key=api_key
             )
         )
 

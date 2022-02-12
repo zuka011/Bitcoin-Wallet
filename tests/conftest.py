@@ -26,9 +26,11 @@ def memory_wallet_repository() -> InMemoryWalletRepository:
 
 
 @pytest.fixture
-def memory_transaction_repository() -> InMemoryTransactionRepository:
+def memory_transaction_repository(
+    memory_wallet_repository: InMemoryWalletRepository,
+) -> InMemoryTransactionRepository:
     """Returns an in-memory implementation of a transaction repository."""
-    return InMemoryTransactionRepository()
+    return InMemoryTransactionRepository(wallet_repository=memory_wallet_repository)
 
 
 @pytest.fixture

@@ -19,3 +19,6 @@ class ITransactionRepository(Protocol):
 
     def get_transactions(self, *, wallet_address: str) -> Iterable[TransactionEntry]:
         """Returns all transactions associated with the specified wallet address."""
+
+    def get_user_transactions(self, *, api_key: str) -> Iterable[TransactionEntry]:
+        """Returns all transactions associated with the user with the specified API key."""
