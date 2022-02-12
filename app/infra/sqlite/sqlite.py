@@ -20,13 +20,13 @@ class SqliteRepository:
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
         self.close()
 
-    def update(self, sql: str, parameters: Iterable[Any]) -> None:
+    def update(self, sql: str, parameters: Iterable[Any] = ()) -> None:
         """Executes the specified SQL statement to update the data base."""
         with self.__connection_factory.get_connection() as connection:
             connection.execute(sql, parameters)
             connection.commit()
 
-    def query(self, sql: str, parameters: Iterable[Any]) -> Cursor:
+    def query(self, sql: str, parameters: Iterable[Any] = ()) -> Cursor:
         """Executes the specified SQL statement and returns the result."""
         with self.__connection_factory.get_connection() as connection:
             return connection.execute(sql, parameters)
