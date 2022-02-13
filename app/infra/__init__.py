@@ -27,6 +27,7 @@ from .repositories import (
     InMemoryUserRepository,
     InMemoryWalletRepository,
 )
+from .resources import AutoCloseable
 from .sqlite import (
     InMemoryConnectionFactory,
     ISqliteConnectionFactory,
