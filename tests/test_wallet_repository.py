@@ -42,6 +42,9 @@ def test_should_retrieve_wallets_from_repository(
     wallet_repository.add_wallet(wallet=wallet_1, api_key=key)
     wallet_repository.add_wallet(wallet=wallet_2, api_key=key)
 
+    assert wallet_repository.has_wallet(wallet_address=wallet_1.address) is True
+    assert wallet_repository.has_wallet(wallet_address=wallet_2.address) is True
+
     assert wallet_repository.get_wallet(wallet_address=wallet_1.address) == wallet_1
     assert wallet_repository.get_wallet(wallet_address=wallet_2.address) == wallet_2
 
