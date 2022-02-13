@@ -17,6 +17,7 @@ from .fastapi import (
     FetchWalletResponse,
     WalletModel,
     help_api,
+    invalid_username_exception_handler,
     statistics_api,
     transaction_api,
     user_api,

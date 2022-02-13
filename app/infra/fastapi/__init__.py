@@ -9,7 +9,7 @@ from .transaction import (
     FetchUserTransactionsResponse,
     transaction_api,
 )
-from .user import CreateUserResponse, user_api
+from .user import CreateUserResponse, invalid_username_exception_handler, user_api
 from .wallet import (
     CreateWalletRequest,
     CreateWalletResponse,
