@@ -1,7 +1,7 @@
 from typing import List
 
 from core import BitcoinWalletService, Transaction
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from infra.fastapi.dependables import get_bitcoin_wallet_service
 from pydantic import BaseModel
 from starlette import status
@@ -27,26 +27,13 @@ class TransactionModel(BaseModel):
 
 
 class CreateTransactionRequest(BaseModel):
-    api_key: str
     source_address: str
     destination_address: str
     amount: float
 
 
-class CreateTransactionResponse(BaseModel):
-    pass
-
-
-class FetchTransactionsRequest(BaseModel):
-    api_key: str
-
-
 class FetchTransactionsResponse(BaseModel):
     transactions: List[TransactionModel]
-
-
-class FetchUserTransactionsRequest(BaseModel):
-    api_key: str
 
 
 class FetchUserTransactionsResponse(BaseModel):
@@ -58,21 +45,20 @@ transaction_api = APIRouter()
 
 @transaction_api.post(
     path="/transactions",
-    response_model=CreateTransactionResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def create_transaction(
     request: CreateTransactionRequest,
+    api_key: str = Header(""),
     core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
-) -> CreateTransactionResponse:
+) -> None:
     """Transfers the given amount of funds from the specified source wallet to the destination one."""
     core.transfer(
-        api_key=request.api_key,
+        api_key=api_key,
         source_address=request.source_address,
         destination_address=request.destination_address,
         amount=request.amount,
     )
-    return CreateTransactionResponse()
 
 
 @transaction_api.get(
@@ -82,7 +68,7 @@ def create_transaction(
 )
 def fetch_transactions(
     address: str,
-    request: FetchTransactionsRequest,
+    api_key: str = Header(""),
     core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
 ) -> FetchTransactionsResponse:
     """Retrieves all transactions associated with the specified wallet."""
@@ -90,7 +76,7 @@ def fetch_transactions(
         transactions=[
             TransactionModel.get_from(transaction)
             for transaction in core.get_transactions(
-                wallet_address=address, api_key=request.api_key
+                wallet_address=address, api_key=api_key
             )
         ]
     )
@@ -102,13 +88,13 @@ def fetch_transactions(
     status_code=status.HTTP_200_OK,
 )
 def fetch_user_transactions(
-    request: FetchUserTransactionsRequest,
+    api_key: str = Header(""),
     core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
 ) -> FetchUserTransactionsResponse:
     """Retrieves all transactions associated with the user with the specified API key."""
     return FetchUserTransactionsResponse(
         transactions=[
             TransactionModel.get_from(transaction)
-            for transaction in core.get_user_transactions(api_key=request.api_key)
+            for transaction in core.get_user_transactions(api_key=api_key)
         ]
     )

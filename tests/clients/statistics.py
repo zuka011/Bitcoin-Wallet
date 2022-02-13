@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from infra import FetchStatisticsRequest
 from requests import Response
 from starlette.testclient import TestClient
 
@@ -11,6 +10,4 @@ class StatisticsClient:
 
     def fetch_statistics(self, *, api_key: str) -> Response:
         """Submits a GET request to retrieve the platform statistics."""
-        return self.test_client.get(
-            "/statistics", data=FetchStatisticsRequest(api_key=api_key).json()
-        )
+        return self.test_client.get("/statistics", headers={"api-key": api_key})

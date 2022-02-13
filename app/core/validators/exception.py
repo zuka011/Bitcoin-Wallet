@@ -8,3 +8,7 @@ class InvalidUsernameException(Exception):
 
 class InvalidWalletRequestException(Exception):
     pass
+
+
+class InvalidTransactionRequestException(Exception):
+    pass

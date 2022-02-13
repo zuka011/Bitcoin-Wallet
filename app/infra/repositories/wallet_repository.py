@@ -18,6 +18,10 @@ class InMemoryWalletRepository:
         self.__wallet_by_address[wallet.address] = wallet
         self.__api_keys_by_wallet_address[wallet.address] = api_key
 
+    def has_wallet(self, *, wallet_address: str) -> bool:
+        """Returns the wallet corresponding with the specified address."""
+        return wallet_address in self.__wallet_by_address
+
     def get_wallet(self, *, wallet_address: str) -> WalletEntry:
         """Returns the wallet corresponding with the specified address."""
         assert (
@@ -43,6 +47,10 @@ class InMemoryWalletRepository:
 
     def is_wallet_owner(self, *, wallet_address: str, api_key: str) -> bool:
         """Returns true if the wallet belongs to the user with the specified API key."""
+        assert (
+            wallet_address in self.__api_keys_by_wallet_address
+        ), f"A wallet with the address {wallet_address} does not exist."
+
         return self.__api_keys_by_wallet_address[wallet_address] == api_key
 
     def get_wallet_owner(self, *, wallet_address: str) -> str:

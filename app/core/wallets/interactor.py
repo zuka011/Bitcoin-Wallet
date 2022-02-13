@@ -44,7 +44,9 @@ class WalletInteractor:
         """Returns the wallet corresponding to the specified unique address.
 
         :raises InvalidApiKeyException if the wallet does not belong to the API key."""
-        if not self.__wallet_repository.is_wallet_owner(
+        if not self.__wallet_repository.has_wallet(
+            wallet_address=address
+        ) or not self.__wallet_repository.is_wallet_owner(
             wallet_address=address, api_key=api_key
         ):
             raise InvalidApiKeyException("The address or API key is invalid.")

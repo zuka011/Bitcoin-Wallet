@@ -10,13 +10,15 @@ class UserInteractor:
         self,
         *,
         user_repository: IUserRepository,
-        username_validations: Iterable[IUsernameValidator] = (),
+        username_validators: Iterable[IUsernameValidator] = (),
     ) -> None:
         self.__user_repository = user_repository
-        self.__username_validations = username_validations
+        self.__username_validators = username_validators
 
     def create_user(self, username: str) -> str:
-        """Creates a user with the specified username and returns a newly generated API key."""
+        """Creates a user with the specified username and returns a newly generated API key.
+
+        :raises InvalidUsernameException if the username is too long."""
         self.__validate_username(username)
 
         api_key = str(uuid4())
@@ -25,6 +27,8 @@ class UserInteractor:
         return api_key
 
     def __validate_username(self, username: str) -> None:
-        """Validates the specified username against all username validators."""
-        for validation in self.__username_validations:
+        """Validates the specified username against all username validators.
+
+        :raises InvalidUsernameException if the username is too long."""
+        for validation in self.__username_validators:
             validation.is_valid(username)

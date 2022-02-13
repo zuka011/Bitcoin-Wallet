@@ -48,7 +48,7 @@ def test_should_not_allow_duplicate_names(
 ) -> None:
     user_interactor = UserInteractor(
         user_repository=memory_user_repository,
-        username_validations=[
+        username_validators=[
             DuplicateUsernameValidator(user_repository=memory_user_repository)
         ],
     )
@@ -62,7 +62,7 @@ def test_should_not_allow_duplicate_names(
 def test_should_not_allow_short_names(user_name: str) -> None:
     interactor = UserInteractor(
         user_repository=InMemoryUserRepository(),
-        username_validations=[ShortUsernameValidator(min_length=8)],
+        username_validators=[ShortUsernameValidator(min_length=8)],
     )
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)
@@ -72,7 +72,7 @@ def test_should_not_allow_short_names(user_name: str) -> None:
 def test_should_not_allow_long_names(user_name: str) -> None:
     interactor = UserInteractor(
         user_repository=InMemoryUserRepository(),
-        username_validations=[LongUsernameValidator(max_length=20)],
+        username_validators=[LongUsernameValidator(max_length=20)],
     )
     with pytest.raises(InvalidUsernameException):
         interactor.create_user(user_name)

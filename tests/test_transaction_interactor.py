@@ -5,6 +5,7 @@ import pytest
 from core import (
     Currency,
     InvalidApiKeyException,
+    InvalidTransactionRequestException,
     Transaction,
     TransactionInteractor,
     UserInteractor,
@@ -117,6 +118,52 @@ def test_should_transfer_funds_between_users(
     assert new_wallet_2.get_balance(currency=Currency.USD) == 17.5
 
 
+def test_should_not_transfer_negative_funds(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    key_1 = user_interactor.create_user("User 1")
+    wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
+
+    key_2 = user_interactor.create_user("User 2")
+    wallet_2 = wallet_interactor.create_wallet(api_key=key_2)
+
+    with pytest.raises(InvalidTransactionRequestException):
+        transaction_interactor.transfer(
+            api_key=key_1,
+            source_address=wallet_1.address,
+            destination_address=wallet_2.address,
+            amount=-2,
+        )
+
+
+def test_should_not_transfer_insufficient_funds(
+    user_interactor: UserInteractor,
+    wallet_interactor: WalletInteractor,
+    transaction_interactor: TransactionInteractor,
+    currency_converter: StubCurrencyConverter,
+    system_configuration: StubSystemConfiguration,
+) -> None:
+    system_configuration.initial_balance = 1
+
+    key_1 = user_interactor.create_user("User 1")
+    wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
+
+    key_2 = user_interactor.create_user("User 2")
+    wallet_2 = wallet_interactor.create_wallet(api_key=key_2)
+
+    with pytest.raises(InvalidTransactionRequestException):
+        transaction_interactor.transfer(
+            api_key=key_1,
+            source_address=wallet_1.address,
+            destination_address=wallet_2.address,
+            amount=2,
+        )
+
+
 def test_should_not_transfer_funds_with_incorrect_api_key(
     user_interactor: UserInteractor,
     wallet_interactor: WalletInteractor,
@@ -141,7 +188,10 @@ def test_should_return_transactions_for_wallet(
     user_interactor: UserInteractor,
     wallet_interactor: WalletInteractor,
     transaction_interactor: TransactionInteractor,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
+    system_configuration.initial_balance = 1
+
     key = user_interactor.create_user(random_string())
     wallet_1 = wallet_interactor.create_wallet(api_key=key)
     wallet_2 = wallet_interactor.create_wallet(api_key=key)
@@ -180,7 +230,10 @@ def test_should_return_transactions_between_users(
     user_interactor: UserInteractor,
     wallet_interactor: WalletInteractor,
     transaction_interactor: TransactionInteractor,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
+    system_configuration.initial_balance = 1
+
     key_1 = user_interactor.create_user(random_string())
     key_2 = user_interactor.create_user(random_string())
     wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
@@ -236,6 +289,8 @@ def test_should_include_transaction_fees_in_transactions(
     transaction_interactor: TransactionInteractor,
     system_configuration: StubSystemConfiguration,
 ) -> None:
+    system_configuration.initial_balance = 1
+
     key_1 = user_interactor.create_user(random_string())
     key_2 = user_interactor.create_user(random_string())
     wallet_1 = wallet_interactor.create_wallet(api_key=key_1)
@@ -284,7 +339,10 @@ def test_should_store_transactions_persistently(
     wallet_interactor: WalletInteractor,
     transaction_interactor: TransactionInteractor,
     memory_transaction_repository: InMemoryTransactionRepository,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
+    system_configuration.initial_balance = 1
+
     key = user_interactor.create_user(random_string())
     wallet_1 = wallet_interactor.create_wallet(api_key=key)
     wallet_2 = wallet_interactor.create_wallet(api_key=key)
@@ -326,7 +384,10 @@ def test_should_not_return_transactions_for_wallet_with_invalid_api_key(
     user_interactor: UserInteractor,
     wallet_interactor: WalletInteractor,
     transaction_interactor: TransactionInteractor,
+    system_configuration: StubSystemConfiguration,
 ) -> None:
+    system_configuration.initial_balance = 1
+
     key = user_interactor.create_user(random_string())
     wallet_1 = wallet_interactor.create_wallet(api_key=key)
     wallet_2 = wallet_interactor.create_wallet(api_key=key)
@@ -538,6 +599,8 @@ def test_should_return_empty_transaction_list_for_user_with_invalid_api_key(
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
 ) -> None:
+    system_configuration.initial_balance = 1
+
     key = user_interactor.create_user(random_string())
     wallet_1 = wallet_interactor.create_wallet(api_key=key)
     wallet_2 = wallet_interactor.create_wallet(api_key=key)
