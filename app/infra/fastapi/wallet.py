@@ -1,7 +1,7 @@
 from typing import Dict
 
 from core import BitcoinWalletService, Currency, Wallet
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from infra.fastapi.dependables import get_bitcoin_wallet_service
 from pydantic import BaseModel
 from starlette import status
@@ -24,7 +24,7 @@ class WalletModel(BaseModel):
 
 
 class CreateWalletRequest(BaseModel):
-    api_key: str
+    pass
 
 
 class CreateWalletResponse(BaseModel):
@@ -32,7 +32,7 @@ class CreateWalletResponse(BaseModel):
 
 
 class FetchWalletRequest(BaseModel):
-    api_key: str
+    pass
 
 
 class FetchWalletResponse(BaseModel):
@@ -48,12 +48,12 @@ wallet_api = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 def create_wallet(
-    request: CreateWalletRequest,
+    api_key: str = Header(""),
     core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
 ) -> CreateWalletResponse:
     """Creates a wallet for the user with the specified API key."""
     return CreateWalletResponse(
-        wallet=WalletModel.get_from(core.create_wallet(request.api_key))
+        wallet=WalletModel.get_from(core.create_wallet(api_key))
     )
 
 
@@ -64,12 +64,10 @@ def create_wallet(
 )
 def fetch_wallet(
     address: str,
-    request: FetchWalletRequest,
+    api_key: str = Header(""),
     core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
 ) -> FetchWalletResponse:
     """Fetches the wallet at the specified address."""
     return FetchWalletResponse(
-        wallet=WalletModel.get_from(
-            core.get_wallet(address=address, api_key=request.api_key)
-        )
+        wallet=WalletModel.get_from(core.get_wallet(address=address, api_key=api_key))
     )
