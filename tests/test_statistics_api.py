@@ -3,11 +3,16 @@ from clients.statistics import StatisticsClient
 from clients.transaction import TransactionClient
 from clients.user import UserClient
 from clients.wallet import WalletClient
-from infra import CreateUserResponse, CreateWalletResponse, FetchStatisticsResponse
+from infra import (
+    CreateUserResponse,
+    CreateWalletResponse,
+    Error,
+    FetchStatisticsResponse,
+)
 from response_utils import parse_response
 from starlette import status
 from stubs.configuration import StubSystemConfiguration
-from utils import random_string
+from utils import random_api_key, random_string
 
 
 def test_should_return_empty_platform_statistics(
@@ -22,6 +27,16 @@ def test_should_return_empty_platform_statistics(
     assert statistics.total_profit == 0
 
     assert response.status_code == status.HTTP_200_OK
+
+
+def test_should_not_return_platform_statistics_with_invalid_api_key(
+    statistics_client: StatisticsClient, system_configuration: StubSystemConfiguration
+) -> None:
+    response = statistics_client.fetch_statistics(api_key=random_api_key())
+    error = parse_response(response, Error)
+
+    assert error.error_message is not None
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_should_return_platform_statistics(
