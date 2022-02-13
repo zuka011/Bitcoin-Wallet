@@ -1,6 +1,7 @@
 from core import BitcoinWalletService
 from fastapi import APIRouter, Depends
 from infra.fastapi.dependables import get_bitcoin_wallet_service
+from infra.fastapi.exception_handlers import Error
 from pydantic import BaseModel
 from starlette import status
 
@@ -16,6 +17,7 @@ user_api = APIRouter()
     path="/users/{username}",
     response_model=CreateUserResponse,
     status_code=status.HTTP_201_CREATED,
+    responses={status.HTTP_409_CONFLICT: {"model": Error}},
 )
 def create_user(
     username: str, core: BitcoinWalletService = Depends(get_bitcoin_wallet_service)

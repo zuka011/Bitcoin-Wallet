@@ -3,6 +3,7 @@ from typing import Dict
 from core import BitcoinWalletService, Currency, Wallet
 from fastapi import APIRouter, Depends, Header
 from infra.fastapi.dependables import get_bitcoin_wallet_service
+from infra.fastapi.exception_handlers import Error
 from pydantic import BaseModel
 from starlette import status
 
@@ -38,6 +39,10 @@ wallet_api = APIRouter()
     path="/wallets",
     response_model=CreateWalletResponse,
     status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_409_CONFLICT: {"model": Error},
+        status.HTTP_401_UNAUTHORIZED: {"model": Error},
+    },
 )
 def create_wallet(
     api_key: str = Header(""),
@@ -53,6 +58,7 @@ def create_wallet(
     path="/wallets/{address}",
     response_model=FetchWalletResponse,
     status_code=status.HTTP_200_OK,
+    responses={status.HTTP_401_UNAUTHORIZED: {"model": Error}},
 )
 def fetch_wallet(
     address: str,

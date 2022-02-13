@@ -1,6 +1,7 @@
 from core import BitcoinWalletService
 from fastapi import APIRouter, Depends, Header
 from infra.fastapi.dependables import get_bitcoin_wallet_service
+from infra.fastapi.exception_handlers import Error
 from pydantic import BaseModel
 from starlette import status
 
@@ -17,6 +18,7 @@ statistics_api = APIRouter()
     path="/statistics",
     response_model=FetchStatisticsResponse,
     status_code=status.HTTP_200_OK,
+    responses={status.HTTP_401_UNAUTHORIZED: {"model": Error}},
 )
 def fetch_statistics(
     api_key: str = Header(""),

@@ -3,6 +3,7 @@ from typing import List
 from core import BitcoinWalletService, Transaction
 from fastapi import APIRouter, Depends, Header
 from infra.fastapi.dependables import get_bitcoin_wallet_service
+from infra.fastapi.exception_handlers import Error
 from pydantic import BaseModel
 from starlette import status
 
@@ -46,6 +47,10 @@ transaction_api = APIRouter()
 @transaction_api.post(
     path="/transactions",
     status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_409_CONFLICT: {"model": Error},
+        status.HTTP_401_UNAUTHORIZED: {"model": Error},
+    },
 )
 def create_transaction(
     request: CreateTransactionRequest,
@@ -65,6 +70,7 @@ def create_transaction(
     path="/wallets/{address}/transactions",
     response_model=FetchTransactionsResponse,
     status_code=status.HTTP_200_OK,
+    responses={status.HTTP_401_UNAUTHORIZED: {"model": Error}},
 )
 def fetch_transactions(
     address: str,
@@ -86,6 +92,7 @@ def fetch_transactions(
     path="/transactions",
     response_model=FetchUserTransactionsResponse,
     status_code=status.HTTP_200_OK,
+    responses={status.HTTP_401_UNAUTHORIZED: {"model": Error}},
 )
 def fetch_user_transactions(
     api_key: str = Header(""),
