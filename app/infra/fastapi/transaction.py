@@ -32,20 +32,8 @@ class CreateTransactionRequest(BaseModel):
     amount: float
 
 
-class CreateTransactionResponse(BaseModel):
-    pass
-
-
-class FetchTransactionsRequest(BaseModel):
-    pass
-
-
 class FetchTransactionsResponse(BaseModel):
     transactions: List[TransactionModel]
-
-
-class FetchUserTransactionsRequest(BaseModel):
-    pass
 
 
 class FetchUserTransactionsResponse(BaseModel):
@@ -57,14 +45,13 @@ transaction_api = APIRouter()
 
 @transaction_api.post(
     path="/transactions",
-    response_model=CreateTransactionResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def create_transaction(
     request: CreateTransactionRequest,
     api_key: str = Header(""),
     core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
-) -> CreateTransactionResponse:
+) -> None:
     """Transfers the given amount of funds from the specified source wallet to the destination one."""
     core.transfer(
         api_key=api_key,
@@ -72,7 +59,6 @@ def create_transaction(
         destination_address=request.destination_address,
         amount=request.amount,
     )
-    return CreateTransactionResponse()
 
 
 @transaction_api.get(

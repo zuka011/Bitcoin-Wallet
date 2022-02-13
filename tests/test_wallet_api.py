@@ -5,9 +5,8 @@ from clients.wallet import WalletClient
 from core import Currency, IWalletValidator, WalletApiKeyValidator, WalletLimitValidator
 from infra import (
     CreateUserResponse,
-    CreateWalletError,
     CreateWalletResponse,
-    FetchWalletError,
+    Error,
     FetchWalletResponse,
     InMemoryUserRepository,
     InMemoryWalletRepository,
@@ -59,7 +58,7 @@ def test_should_not_create_wallet_for_user_with_invalid_api_key(
     )
 
     response = wallet_client.create_wallet(api_key=random_api_key())
-    error = parse_response(response, CreateWalletError)
+    error = parse_response(response, Error)
 
     assert error.error_message is not None
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -81,7 +80,7 @@ def test_should_not_create_too_many_wallets_for_user(
     wallet_client.create_wallet(api_key=key)
 
     response = wallet_client.create_wallet(api_key=key)
-    error = parse_response(response, CreateWalletError)
+    error = parse_response(response, Error)
 
     assert error.error_message is not None
     assert response.status_code == status.HTTP_409_CONFLICT
@@ -120,7 +119,7 @@ def test_should_not_fetch_wallet_for_user_with_invalid_api_key(
     response = wallet_client.fetch_wallet(
         wallet_address=wallet_address, api_key=random_api_key()
     )
-    error = parse_response(response, FetchWalletError)
+    error = parse_response(response, Error)
 
     assert error.error_message is not None
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -137,7 +136,7 @@ def test_should_not_fetch_invalid_wallet(
     response = wallet_client.fetch_wallet(
         wallet_address=random_string(), api_key=api_key
     )
-    error = parse_response(response, FetchWalletError)
+    error = parse_response(response, Error)
 
     assert error.error_message is not None
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
