@@ -9,7 +9,7 @@ class InMemoryWalletRepository:
         self.__wallets_by_api_key: Dict[str, List[WalletEntry]] = defaultdict(
             lambda: []
         )
-        self.__api_keys_by_wallet_address: Dict[str, str] = {}
+        self.__api_keys_by_wallet_address: Dict[str, str] = defaultdict(lambda: "")
         self.__wallet_by_address: Dict[str, WalletEntry] = {}
 
     def add_wallet(self, wallet: WalletEntry, *, api_key: str) -> None:

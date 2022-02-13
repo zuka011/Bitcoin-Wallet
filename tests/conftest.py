@@ -7,6 +7,7 @@ from clients.user import UserClient
 from clients.wallet import WalletClient
 from core import (
     IUsernameValidator,
+    IWalletValidator,
     StatisticsInteractor,
     TransactionInteractor,
     UserInteractor,
@@ -70,6 +71,13 @@ def system_configuration() -> StubSystemConfiguration:
 @pytest.fixture
 def username_validators() -> List[IUsernameValidator]:
     """Returns an empty mutable list of username validators. Validators can be added
+    and removed throughout the test."""
+    return []
+
+
+@pytest.fixture
+def wallet_validators() -> List[IWalletValidator]:
+    """Returns an empty mutable list of wallet validators. Validators can be added
     and removed throughout the test."""
     return []
 
@@ -200,6 +208,7 @@ def test_client(
     currency_converter: StubCurrencyConverter,
     system_configuration: StubSystemConfiguration,
     username_validators: List[IUsernameValidator],
+    wallet_validators: List[IWalletValidator],
 ) -> TestClient:
     """Returns a preset test client."""
     return TestClient(
@@ -211,6 +220,7 @@ def test_client(
             currency_converter=currency_converter,
             system_configuration=system_configuration,
             username_validators=username_validators,
+            wallet_validators=wallet_validators,
         )
     )
 

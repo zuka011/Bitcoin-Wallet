@@ -33,7 +33,8 @@ def create_user(
 def invalid_username_exception_handler(
     _: Request, exception: InvalidUsernameException
 ) -> JSONResponse:
+    """Exception handler for all InvalidUsernameExceptions."""
     return JSONResponse(
         status_code=status.HTTP_409_CONFLICT,
-        content=CreateUserError(error_message=str(exception)).json(),
+        content=CreateUserError(error_message=str(exception)).dict(),
     )

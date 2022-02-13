@@ -2,7 +2,7 @@ from typing import List
 
 from clients.user import UserClient
 from core import DuplicateUsernameValidator, IUsernameValidator
-from infra import CreateUserResponse, InMemoryUserRepository
+from infra import CreateUserError, CreateUserResponse, InMemoryUserRepository
 from response_utils import parse_response
 from starlette import status
 from utils import random_string
@@ -34,5 +34,7 @@ def test_should_not_create_user_with_duplicate_username(
     user_client.create_user(username)
 
     response = user_client.create_user(username)
+    error = parse_response(response, CreateUserError)
 
+    assert error.error_message is not None
     assert response.status_code == status.HTTP_409_CONFLICT

@@ -3,13 +3,16 @@ from typing import Iterable
 from core import (
     BitcoinWalletService,
     ICurrencyConverter,
+    InvalidApiKeyException,
     InvalidUsernameException,
+    InvalidWalletRequestException,
     IStatisticsRepository,
     ISystemConfiguration,
     ITransactionRepository,
     IUsernameValidator,
     IUserRepository,
     IWalletRepository,
+    IWalletValidator,
     StatisticsInteractor,
     TransactionInteractor,
     UserInteractor,
@@ -18,7 +21,9 @@ from core import (
 from fastapi import FastAPI
 from infra import (
     help_api,
+    invalid_api_key_exception_handler,
     invalid_username_exception_handler,
+    invalid_wallet_request_exception_handler,
     statistics_api,
     transaction_api,
     user_api,
@@ -34,7 +39,8 @@ def setup(
     statistics_repository: IStatisticsRepository,
     currency_converter: ICurrencyConverter,
     system_configuration: ISystemConfiguration,
-    username_validators: Iterable[IUsernameValidator] = ()
+    username_validators: Iterable[IUsernameValidator] = (),
+    wallet_validators: Iterable[IWalletValidator] = ()
 ) -> FastAPI:
     app = FastAPI()
     app.include_router(help_api)
@@ -53,6 +59,7 @@ def setup(
             wallet_repository=wallet_repository,
             currency_converter=currency_converter,
             system_configuration=system_configuration,
+            wallet_validators=wallet_validators,
         ),
         transaction_interactor=TransactionInteractor(
             wallet_repository=wallet_repository,
@@ -68,5 +75,9 @@ def setup(
     )
 
     app.exception_handler(InvalidUsernameException)(invalid_username_exception_handler)
+    app.exception_handler(InvalidApiKeyException)(invalid_api_key_exception_handler)
+    app.exception_handler(InvalidWalletRequestException)(
+        invalid_wallet_request_exception_handler
+    )
 
     return app
