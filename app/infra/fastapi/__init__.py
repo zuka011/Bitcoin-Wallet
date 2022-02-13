@@ -1,6 +1,7 @@
 from .exception_handlers import (
     Error,
     invalid_api_key_exception_handler,
+    invalid_transaction_request_exception_handler,
     invalid_username_exception_handler,
     invalid_wallet_request_exception_handler,
 )

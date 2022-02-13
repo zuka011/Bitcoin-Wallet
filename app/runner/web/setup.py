@@ -4,6 +4,7 @@ from core import (
     BitcoinWalletService,
     ICurrencyConverter,
     InvalidApiKeyException,
+    InvalidTransactionRequestException,
     InvalidUsernameException,
     InvalidWalletRequestException,
     IStatisticsRepository,
@@ -22,6 +23,7 @@ from fastapi import FastAPI
 from infra import (
     help_api,
     invalid_api_key_exception_handler,
+    invalid_transaction_request_exception_handler,
     invalid_username_exception_handler,
     invalid_wallet_request_exception_handler,
     statistics_api,
@@ -78,6 +80,9 @@ def setup(
     app.exception_handler(InvalidApiKeyException)(invalid_api_key_exception_handler)
     app.exception_handler(InvalidWalletRequestException)(
         invalid_wallet_request_exception_handler
+    )
+    app.exception_handler(InvalidTransactionRequestException)(
+        invalid_transaction_request_exception_handler
     )
 
     return app

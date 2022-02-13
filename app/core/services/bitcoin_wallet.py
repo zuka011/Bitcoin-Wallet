@@ -43,7 +43,8 @@ class BitcoinWalletService:
         """Transfers the specified amount from the source to the destination wallet. The API key of the owner
         of the source wallet is required for a successful transaction.
 
-        :raises InvalidApiKeyException if the API key is not that of the owner of the source wallet."""
+        :raises InvalidApiKeyException if the API key is not that of the owner of the source wallet.
+        :raises InvalidTransactionRequestException if the specified amount is invalid."""
         self.__transaction_interactor.transfer(
             api_key=api_key,
             source_address=source_address,

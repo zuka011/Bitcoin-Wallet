@@ -1,5 +1,6 @@
 from core import (
     InvalidApiKeyException,
+    InvalidTransactionRequestException,
     InvalidUsernameException,
     InvalidWalletRequestException,
 )
@@ -37,6 +38,16 @@ def invalid_wallet_request_exception_handler(
     _: Request, exception: InvalidWalletRequestException
 ) -> JSONResponse:
     """Exception handler for all InvalidWalletRequestExceptions."""
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content=Error(error_message=str(exception)).dict(),
+    )
+
+
+def invalid_transaction_request_exception_handler(
+    _: Request, exception: InvalidTransactionRequestException
+) -> JSONResponse:
+    """Exception handler for all InvalidTransactionRequestExceptions."""
     return JSONResponse(
         status_code=status.HTTP_409_CONFLICT,
         content=Error(error_message=str(exception)).dict(),

@@ -13,7 +13,7 @@ from core.repositories import (
     WalletEntry,
 )
 from core.transactions.transaction import Transaction
-from core.validators import InvalidApiKeyException
+from core.validators import InvalidApiKeyException, InvalidTransactionRequestException
 
 HUNDRED_PERCENT: Final[int] = 100
 
@@ -50,8 +50,12 @@ class TransactionInteractor:
         """Transfers the specified amount from the source to the destination wallet. The API key of the owner
         of the source wallet is required for a successful transaction.
 
-        :raises InvalidApiKeyException if the API key is not that of the owner of the source wallet."""
+        :raises InvalidApiKeyException if the API key is not that of the owner of the source wallet.
+        :raises InvalidTransactionRequestException if the specified amount is invalid."""
+        self.__validate_wallet(wallet_address=source_address)
+        self.__validate_wallet(wallet_address=destination_address)
         self.__validate_owner(wallet_address=source_address, api_key=api_key)
+        self.__validate_amount(source_address=source_address, amount=amount)
 
         withdraw_amount = self.__withdraw_amount(
             wallet_address=source_address, amount=amount
@@ -77,6 +81,7 @@ class TransactionInteractor:
         """Returns all transactions associated with the specified wallet address.
 
         :raises InvalidApiKeyException if the API key is not that of the owner of the wallet."""
+        self.__validate_wallet(wallet_address=wallet_address)
         self.__validate_owner(wallet_address=wallet_address, api_key=api_key)
 
         return (
@@ -95,6 +100,13 @@ class TransactionInteractor:
             )
         )
 
+    def __validate_wallet(self, *, wallet_address: str) -> None:
+        """Validates if the specified wallet exists."""
+        if not self.__wallet_repository.has_wallet(wallet_address=wallet_address):
+            raise InvalidApiKeyException(
+                f"The specified wallet {wallet_address} doesn't exist."
+            )
+
     def __validate_owner(self, *, wallet_address: str, api_key: str) -> None:
         """Validates if the given wallet belongs to the user with the specified API key."""
         if not self.__wallet_repository.is_wallet_owner(
@@ -102,6 +114,21 @@ class TransactionInteractor:
         ):
             raise InvalidApiKeyException(
                 "The specified source wallet or API key doesn't exist."
+            )
+
+    def __validate_amount(self, *, source_address: str, amount: float) -> None:
+        """Validates if the specified transfer amount is valid."""
+        if amount < 0:
+            raise InvalidTransactionRequestException(
+                "The specified transfer amount must be a non-negative number."
+            )
+
+        if (
+            self.__wallet_repository.get_wallet(wallet_address=source_address).balance
+            < amount
+        ):
+            raise InvalidTransactionRequestException(
+                "There is not enough funds in the source wallet to perform the transaction."
             )
 
     def __get_transfer_fee(self, *, destination_address: str, api_key: str) -> float:

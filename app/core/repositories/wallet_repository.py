@@ -15,6 +15,9 @@ class IWalletRepository(Protocol):
     def add_wallet(self, wallet: WalletEntry, *, api_key: str) -> None:
         """Adds a wallet to this repository for the user with the specified API key."""
 
+    def has_wallet(self, *, wallet_address: str) -> bool:
+        """Returns the wallet corresponding with the specified address."""
+
     def get_wallet(self, *, wallet_address: str) -> WalletEntry:
         """Returns the wallet corresponding with the specified address."""
 

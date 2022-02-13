@@ -16,6 +16,7 @@ from .users import UserInteractor
 from .validators import (
     DuplicateUsernameValidator,
     InvalidApiKeyException,
+    InvalidTransactionRequestException,
     InvalidUsernameException,
     InvalidWalletRequestException,
     IUsernameValidator,

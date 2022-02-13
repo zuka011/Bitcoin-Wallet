@@ -1,5 +1,6 @@
 from .exception import (
     InvalidApiKeyException,
+    InvalidTransactionRequestException,
     InvalidUsernameException,
     InvalidWalletRequestException,
 )
