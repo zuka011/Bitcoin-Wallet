@@ -6,7 +6,7 @@ from .exception_handlers import (
     invalid_wallet_request_exception_handler,
 )
 from .help import FetchHelpResponse, help_api
-from .statistics import FetchStatisticsRequest, FetchStatisticsResponse, statistics_api
+from .statistics import FetchStatisticsResponse, statistics_api
 from .transaction import (
     CreateTransactionRequest,
     FetchTransactionsResponse,

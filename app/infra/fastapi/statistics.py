@@ -1,12 +1,8 @@
 from core import BitcoinWalletService
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from infra.fastapi.dependables import get_bitcoin_wallet_service
 from pydantic import BaseModel
 from starlette import status
-
-
-class FetchStatisticsRequest(BaseModel):
-    api_key: str
 
 
 class FetchStatisticsResponse(BaseModel):
@@ -23,11 +19,11 @@ statistics_api = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 def fetch_statistics(
-    request: FetchStatisticsRequest,
+    api_key: str = Header(""),
     core: BitcoinWalletService = Depends(get_bitcoin_wallet_service),
 ) -> FetchStatisticsResponse:
     """Returns the current transaction and profit statistics for the platform."""
     return FetchStatisticsResponse(
-        transactions=core.get_total_transactions(api_key=request.api_key),
-        total_profit=core.get_platform_profit(api_key=request.api_key),
+        transactions=core.get_total_transactions(api_key=api_key),
+        total_profit=core.get_platform_profit(api_key=api_key),
     )
