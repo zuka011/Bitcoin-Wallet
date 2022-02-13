@@ -1,8 +1,11 @@
 import os
 from typing import Callable, Final, Iterable, Optional, TypeVar
 
+from fastapi import FastAPI
+
 from core import (
     BitcoinWalletService,
+    DuplicateUsernameValidator,
     ICurrencyConverter,
     InvalidApiKeyException,
     InvalidTransactionRequestException,
@@ -15,12 +18,15 @@ from core import (
     IUserRepository,
     IWalletRepository,
     IWalletValidator,
+    LongUsernameValidator,
+    ShortUsernameValidator,
     StatisticsInteractor,
     TransactionInteractor,
     UserInteractor,
+    WalletApiKeyValidator,
     WalletInteractor,
+    WalletLimitValidator,
 )
-from fastapi import FastAPI
 from infra import (
     AutoCloseable,
     SqliteConnectionFactory,
@@ -44,6 +50,11 @@ WALLETS_SQL: Final[str] = "data_base/wallets.sql"
 TRANSACTIONS_SQL: Final[str] = "data_base/transactions.sql"
 STATISTICS_SQL: Final[str] = "data_base/statistics.sql"
 BITCOIN_WALLET_DB: Final[str] = "data_base/bitcoin_wallet.sqlite"
+
+MIN_USERNAME_LENGTH: Final[int] = 8
+MAX_USERNAME_LENGTH: Final[int] = 20
+
+MAX_WALLET_COUNT: Final[int] = 3
 
 T = TypeVar("T", bound=AutoCloseable)
 S = TypeVar("S")
@@ -117,6 +128,30 @@ def sqlite_statistics_repository(_app: FastAPI) -> SqliteStatisticsRepository:
     )
 
 
+def default_username_validators(
+    *,
+    user_repository: IUserRepository,
+) -> Iterable[IUsernameValidator]:
+    """Returns the default username validators for the system."""
+    return (
+        DuplicateUsernameValidator(user_repository=user_repository),
+        ShortUsernameValidator(min_length=MIN_USERNAME_LENGTH),
+        LongUsernameValidator(max_length=MAX_USERNAME_LENGTH),
+    )
+
+
+def default_wallet_validators(
+    *, user_repository: IUserRepository, wallet_repository: IWalletRepository
+) -> Iterable[IWalletValidator]:
+    """Returns the default wallet validators for the system."""
+    return (
+        WalletLimitValidator(
+            wallet_limit=MAX_WALLET_COUNT, wallet_repository=wallet_repository
+        ),
+        WalletApiKeyValidator(user_repository=user_repository),
+    )
+
+
 def setup(
     *,
     user_repository: Optional[IUserRepository] = None,
@@ -125,8 +160,8 @@ def setup(
     statistics_repository: Optional[IStatisticsRepository] = None,
     currency_converter: ICurrencyConverter,
     system_configuration: ISystemConfiguration,
-    username_validators: Iterable[IUsernameValidator] = (),
-    wallet_validators: Iterable[IWalletValidator] = (),
+    username_validators: Optional[Iterable[IUsernameValidator]] = None,
+    wallet_validators: Optional[Iterable[IWalletValidator]] = None,
 ) -> FastAPI:
     app = FastAPI()
     app.include_router(help_api)
@@ -141,6 +176,16 @@ def setup(
         app
     )
     statistics_repository = statistics_repository or sqlite_statistics_repository(app)
+
+    if username_validators is None:
+        username_validators = default_username_validators(
+            user_repository=user_repository
+        )
+
+    if wallet_validators is None:
+        wallet_validators = default_wallet_validators(
+            user_repository=user_repository, wallet_repository=wallet_repository
+        )
 
     app.state.core = BitcoinWalletService(
         user_interactor=UserInteractor(
